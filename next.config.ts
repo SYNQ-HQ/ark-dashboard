@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    // @ts-expect-error - turbo is experimental
     // turbo: {
     //   resolveAlias: {
     //     "pino-pretty": path.resolve(__dirname, "src/lib/noop.ts"),

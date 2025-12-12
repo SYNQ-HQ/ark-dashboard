@@ -82,12 +82,10 @@ async function main() {
     // 6. Create Admin User
     await prisma.user.upsert({
         where: { walletAddress: "0xADMIN1234567890" },
-        // @ts-expect-error - role type might be stale
         update: { role: 'ADMIN' },
         create: {
             walletAddress: "0xADMIN1234567890",
             username: "SuperAdmin",
-            // @ts-expect-error - role type might be stale
             role: 'ADMIN',
             points: 999999,
             isEligible: true,
