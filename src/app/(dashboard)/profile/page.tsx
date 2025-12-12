@@ -20,7 +20,7 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (user?.username) {
-            setNewUsername(user.username);
+            setNewUsername(user?.username ?? '');
         }
     }, [user?.username]);
 
@@ -102,8 +102,8 @@ export default function ProfilePage() {
                                     value={newUsername}
                                     onChange={(e) => setNewUsername(e.target.value)}
                                     className={`w-full bg-background border rounded-lg px-4 py-3 pl-4 pr-10 text-foreground focus:outline-none focus:ring-2 transition-all ${isAvailable === true ? "border-green-500/50 focus:ring-green-500/20" :
-                                            isAvailable === false ? "border-red-500/50 focus:ring-red-500/20" :
-                                                "border-border focus:ring-primary/50"
+                                        isAvailable === false ? "border-red-500/50 focus:ring-red-500/20" :
+                                            "border-border focus:ring-primary/50"
                                         }`}
                                     placeholder="Enter nickname"
                                     disabled={saving}
@@ -132,7 +132,7 @@ export default function ProfilePage() {
                                 <button
                                     onClick={() => {
                                         setIsEditing(false);
-                                        setNewUsername(user.username);
+                                        setNewUsername(user?.username ?? '');
                                         setAvailabilityMsg("");
                                         setIsAvailable(null);
                                     }}

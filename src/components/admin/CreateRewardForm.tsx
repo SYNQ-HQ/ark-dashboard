@@ -13,7 +13,10 @@ export default function CreateRewardForm() {
     const [uploading, setUploading] = useState(false);
 
     async function handleSubmit(formData: FormData) {
-        if (!user) return toast.error("User not loaded");
+        if (!user) {
+            toast.error("User not loaded");
+            return;
+        }
 
         let imageUrl = "";
 
@@ -22,7 +25,8 @@ export default function CreateRewardForm() {
             const signatureRes = await getUploadSignature(user.id);
             if (!signatureRes.success || !signatureRes.signature) {
                 setUploading(false);
-                return toast.error("Failed to get upload signature");
+                toast.error("Failed to get upload signature");
+                return;
             }
 
             // Upload to Cloudinary
@@ -48,7 +52,8 @@ export default function CreateRewardForm() {
             } catch (e) {
                 console.error(e);
                 setUploading(false);
-                return toast.error("Image upload failed");
+                toast.error("Image upload failed");
+                return;
             }
             setUploading(false);
         }
@@ -62,6 +67,8 @@ export default function CreateRewardForm() {
             toast.success("Reward created!");
             formRef.current?.reset();
             setFile(null);
+        } else {
+            toast.error(res.message || "Failed to create reward");
         }
     }
 

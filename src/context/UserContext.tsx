@@ -16,6 +16,7 @@ interface User {
     bio: string | null;
     points: number;
     isEligible: boolean;
+    lastUsernameChange?: string | Date | null;
     streak?: {
         currentStreak: number;
         lastCheckIn: string | Date;
