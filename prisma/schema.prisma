@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  walletAddress String    @unique
+  username      String    @unique
+  bio           String?
+  points        Int       @default(0)
+  isEligible    Boolean   @default(false)
+  lastSpin      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  missions      UserMission[]
+  redemptions   Redemption[]
+  streak        Streak?
+  badges        UserBadge[]
+  role          Role      @default(USER)
+  isBanned      Boolean   @default(false)
+  lastUsernameChange DateTime?
+  activities    UserActivity[]
+}
+
+model UserActivity {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // "CHECK_IN", "MISSION", "REWARD", etc.
+  description String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Mission {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String // SOCIAL, ONCHAIN, REFERRAL
+  points      Int
+  frequency   String // DAILY, ONETIME
+  
+  userMissions UserMission[]
+}
+
+model UserMission {
+  id          String    @id @default(cuid())
+  userId      String
+  missionId   String
+  status      String // PENDING, COMPLETED
+  completedAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id])
+  mission Mission @relation(fields: [missionId], references: [id])
+  
+  @@unique([userId, missionId]) // Ensure user can have only one active record per mission (unless recurring logic handled elsewhere)
+}
+
+model Reward {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  cost        Int
+  stock       Int? // Optional stock limit
+  imageUrl    String?
+
+  redemptions Redemption[]
+}
+
+model Redemption {
+  id         String   @id @default(cuid())
+  userId     String
+  rewardId   String
+  redeemedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  reward Reward @relation(fields: [rewardId], references: [id])
+}
+
+model Streak {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  currentStreak Int    @default(0)
+  lastCheckIn DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  icon        String // Emoji or URL
+  
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id String @id @default(cuid())
+  userId String
+  badgeId String
+  awardedAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model ImpactStory {
+  id String @id @default(cuid())
+  title String
+  description String
+  imageUrl String?
+  createdAt DateTime @default(now())
+}
