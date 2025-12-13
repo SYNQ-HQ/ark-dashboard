@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
-import { updateUsername, checkUsernameAvailability } from "@/actions/user";
+import { updateUsername, checkUsernameAvailability, updateProfileImage } from "@/actions/user";
+import { getUploadSignature } from "@/actions/upload";
 import { toast } from "sonner";
 import Skeleton from "@/components/ui/Skeleton";
 import { CopyIcon } from "@/components/Icons";
@@ -17,6 +18,10 @@ export default function ProfilePage() {
     const [isChecking, setIsChecking] = useState(false);
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
     const [availabilityMsg, setAvailabilityMsg] = useState("");
+
+    // Profile image state
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
     useEffect(() => {
         if (user?.username) {
@@ -73,6 +78,56 @@ export default function ProfilePage() {
         }
     }
 
+    async function handleImageUpload(file: File) {
+        if (!user) return;
+
+        setUploadingImage(true);
+        try {
+            // Get upload signature (requireAdmin = false for profile images)
+            const signatureRes = await getUploadSignature(user.id, false);
+            if (!signatureRes.success || !signatureRes.signature) {
+                toast.error("Failed to get upload signature");
+                setUploadingImage(false);
+                return;
+            }
+
+            // Upload to Cloudinary
+            const data = new FormData();
+            data.append("file", file);
+            data.append("api_key", signatureRes.apiKey as string);
+            data.append("timestamp", signatureRes.timestamp?.toString() as string);
+            data.append("signature", signatureRes.signature);
+            data.append("folder", "ark_dashboard");
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${signatureRes.cloudName}/image/upload`,
+                {
+                    method: "POST",
+                    body: data,
+                }
+            );
+
+            if (!response.ok) throw new Error("Upload failed");
+            const json = await response.json();
+            const imageUrl = json.secure_url;
+
+            // Update profile image
+            const res = await updateProfileImage(user.walletAddress, imageUrl);
+            if (res.success) {
+                toast.success("Profile image updated!");
+                await refetchUser();
+                setImageFile(null);
+            } else {
+                toast.error(res.message || "Failed to update profile image");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Image upload failed");
+        } finally {
+            setUploadingImage(false);
+        }
+    }
+
     if (!user) {
         return (
             <div className="bg-card text-card-foreground border border-card-border rounded-lg p-ark-lg shadow-premium-lg">
@@ -89,9 +144,44 @@ export default function ProfilePage() {
         <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
             <div className="bg-card text-card-foreground border border-card-border rounded-lg p-ark-lg shadow-premium-lg relative overflow-hidden">
                 <div className="flex flex-col items-center text-center relative z-10">
-                    <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center mb-4 text-4xl shadow-inner border border-primary/10">
-                        {user.username?.charAt(0).toUpperCase()}
+                    <div className="relative group">
+                        {user.profileImageUrl ? (
+                            <img
+                                src={user.profileImageUrl}
+                                alt={user.username || 'Profile'}
+                                className="w-24 h-24 rounded-full object-cover shadow-lg border-2 border-primary/20"
+                            />
+                        ) : (
+                            <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center text-4xl shadow-inner border border-primary/10">
+                                {user.username?.charAt(0).toUpperCase()}
+                            </div>
+                        )}
+                        <label
+                            htmlFor="profile-image-upload"
+                            className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform"
+                            title="Change photo"
+                        >
+                            {uploadingImage ? (
+                                <span className="material-icons text-sm animate-spin">sync</span>
+                            ) : (
+                                <span className="material-icons text-sm">camera_alt</span>
+                            )}
+                        </label>
+                        <input
+                            id="profile-image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingImage}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    handleImageUpload(file);
+                                }
+                            }}
+                        />
                     </div>
+                    <p className="text-xs text-muted-foreground mt-2 mb-4">Click camera icon to change photo</p>
 
                     {isEditing ? (
                         <div className="flex flex-col gap-2 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">

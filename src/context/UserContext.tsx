@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
 import { auth } from '@/actions/auth';
 import { fetchDashboardData } from '@/actions/dashboard';
@@ -14,6 +14,7 @@ interface User {
     username: string | null;
     role?: 'USER' | 'ADMIN';
     bio: string | null;
+    profileImageUrl?: string | null;
     points: number;
     isEligible: boolean;
     lastUsernameChange?: string | Date | null;
@@ -44,6 +45,51 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Comprehensive cleanup function
+    const clearAllState = useCallback(() => {
+        console.log('Clearing all wallet state...');
+
+        // Clear user state
+        setUser(null);
+
+        // Clear wagmi localStorage entries
+        if (typeof window !== 'undefined') {
+            try {
+                // Clear all wagmi-related keys
+                const keysToRemove = [
+                    'wagmi.store',
+                    'wagmi.recentConnectorId',
+                    'wagmi.wallet',
+                    'wagmi.connected',
+                    'wagmi.cache',
+                    'wagmi.injected.shimDisconnect'
+                ];
+
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+
+                // Clear any connector-specific disconnected flags
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('wagmi.') && key.includes('.disconnected')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+
+                console.log('LocalStorage cleared');
+            } catch (e) {
+                console.error('Failed to clear localStorage:', e);
+            }
+        }
+
+        // Disconnect wallet
+        try {
+            disconnect();
+        } catch (e) {
+            console.error('Disconnect error:', e);
+        }
+    }, [disconnect]);
+
     const loadUser = async () => {
         if (!isConnected || !address) {
             setUser(null);
@@ -64,12 +110,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     ...dashData
                 });
             } else {
+                // Auth failed - clear everything and notify user
                 console.error("Auth failed:", authRes.error);
-                disconnect();
+                const { toast } = await import('sonner');
+                toast.error("Authentication failed. Please reconnect your wallet.");
+                clearAllState();
             }
         } catch (error) {
+            // Network or unexpected error - clear everything and notify user
             console.error("Failed to load user:", error);
-            setUser(null);
+            const { toast } = await import('sonner');
+            toast.error("Connection error. Please try reconnecting.");
+            clearAllState();
         } finally {
             setLoading(false);
         }
@@ -79,6 +131,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         loadUser();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [address, isConnected]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            // Don't clear state on unmount, only on errors
+        };
+    }, []);
 
     return (
         <UserContext.Provider value={{ user, loading, refetchUser: loadUser }}>

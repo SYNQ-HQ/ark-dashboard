@@ -19,7 +19,10 @@ export async function auth(walletAddress: string) {
                         username: `User-${shortAddr}`, // Default name
                         points: 0,
                         streak: {
-                            create: { currentStreak: 0 }
+                            create: {
+                                currentStreak: 0,
+                                lastCheckIn: new Date(0) // Set to epoch (1970) so new users can claim immediately
+                            }
                         }
                     },
                     include: { streak: true, missions: true, badges: { include: { badge: true } } }

@@ -14,6 +14,7 @@ interface Mission {
     type: string;
     status: string;
     points: number;
+    imageUrl?: string | null;
 }
 
 export default function MissionsPage() {
@@ -85,21 +86,28 @@ export default function MissionsPage() {
             <h2 className="text-2xl font-bold mb-6 text-foreground tracking-tight">Daily Missions</h2>
             <div className="divide-y divide-border/50">
                 {missions.map((mission) => (
-                    <div key={mission.id} className="flex items-center justify-between py-6 group">
-                        <div>
+                    <div key={mission.id} className="flex items-start gap-4 py-6 group">
+                        {mission.imageUrl && (
+                            <img
+                                src={mission.imageUrl}
+                                alt={mission.title}
+                                className="w-24 h-24 object-cover rounded-lg flex-shrink-0 shadow-sm"
+                            />
+                        )}
+                        <div className="flex-1">
                             <p className="font-semibold text-lg group-hover:text-primary transition-colors">{mission.title}</p>
                             <p className="text-sm text-muted-foreground mt-1">{mission.description}</p>
                             <span className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground mt-2 inline-block">{mission.type} • +{mission.points} ✨</span>
                         </div>
                         {mission.status === 'COMPLETED' ? (
-                            <div className="flex items-center text-green-500 gap-2">
+                            <div className="flex items-center text-green-500 gap-2 flex-shrink-0">
                                 <span className="font-medium">Completed</span>
                                 <CheckCircleIcon />
                             </div>
                         ) : (
                             <button
                                 onClick={() => handleComplete(mission.id)}
-                                className="bg-primary text-primary-foreground rounded-lg px-6 py-2 font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all"
+                                className="bg-primary text-primary-foreground rounded-lg px-6 py-2 font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all flex-shrink-0"
                             >
                                 Complete
                             </button>

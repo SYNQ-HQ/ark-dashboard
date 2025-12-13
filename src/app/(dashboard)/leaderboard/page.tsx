@@ -7,6 +7,7 @@ import Skeleton from "@/components/ui/Skeleton";
 interface User {
     id: string;
     username: string | null;
+    profileImageUrl?: string | null;
     points: number;
     badges: { badge: { name: string } }[];
 }
@@ -81,7 +82,24 @@ export default function LeaderboardPage() {
                         {users.map((user, i) => (
                             <tr key={user.id} className="hover:bg-muted/20 transition-colors group">
                                 <td className="p-5 font-medium text-muted-foreground">#{i + 1}</td>
-                                <td className="p-5 font-semibold text-foreground group-hover:text-primary transition-colors">{user.username || "Anonymous"}</td>
+                                <td className="p-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            {user.profileImageUrl ? (
+                                                <img
+                                                    src={user.profileImageUrl}
+                                                    alt={user.username || 'User'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <span className="material-icons text-muted-foreground text-sm">person</span>
+                                            )}
+                                        </div>
+                                        <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                                            {user.username || "Anonymous"}
+                                        </span>
+                                    </div>
+                                </td>
                                 <td className="p-5 font-mono text-foreground">{user.points.toLocaleString()}</td>
                                 <td className="p-5">
                                     {user.badges.length > 0 ? user.badges.map((ub, j) => (

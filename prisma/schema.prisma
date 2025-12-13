@@ -15,6 +15,7 @@ model User {
   walletAddress String    @unique
   username      String    @unique
   bio           String?
+  profileImageUrl String?
   points        Int       @default(0)
   isEligible    Boolean   @default(false)
   lastSpin      DateTime?
@@ -53,6 +54,7 @@ model Mission {
   type        String // SOCIAL, ONCHAIN, REFERRAL
   points      Int
   frequency   String // DAILY, ONETIME
+  imageUrl    String?
   
   userMissions UserMission[]
 }

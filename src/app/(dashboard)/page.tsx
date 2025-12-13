@@ -15,6 +15,7 @@ interface Mission {
   type: string;
   status: string;
   points: number;
+  imageUrl?: string | null;
 }
 
 interface Activity {
@@ -65,6 +66,23 @@ export default function DashboardPage() {
     }
   }
 
+  // Check if user can claim today based on lastCheckIn (UTC)
+  const canClaimToday = () => {
+    if (!user?.streak?.lastCheckIn) return true;
+
+    const now = new Date();
+    const last = new Date(user.streak.lastCheckIn);
+
+    // Compare UTC dates
+    const isSameDay = last.getUTCFullYear() === now.getUTCFullYear() &&
+      last.getUTCMonth() === now.getUTCMonth() &&
+      last.getUTCDate() === now.getUTCDate();
+
+    return !isSameDay;
+  };
+
+  const alreadyClaimedToday = !canClaimToday();
+
   const handleClaimCheckIn = async () => {
     if (!user) return;
     setClaiming(true);
@@ -113,10 +131,13 @@ export default function DashboardPage() {
           </div>
           <button
             onClick={handleClaimCheckIn}
-            disabled={claiming}
-            className="bg-primary text-primary-foreground rounded-lg px-6 py-3 w-full font-medium shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none"
+            disabled={claiming || alreadyClaimedToday}
+            className={`rounded-lg px-6 py-3 w-full font-medium shadow-md transition-all duration-200 ${alreadyClaimedToday
+              ? "bg-green-500 text-white cursor-default"
+              : "bg-primary text-primary-foreground hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              } disabled:opacity-50 disabled:pointer-events-none`}
           >
-            {claiming ? "Claiming..." : "Claim Daily Blessings"}
+            {claiming ? "Claiming..." : alreadyClaimedToday ? "Claimed Today ✓" : "Claim Daily Blessings"}
           </button>
         </div>
 
@@ -134,7 +155,7 @@ export default function DashboardPage() {
               activities.map((activity) => (
                 <div key={activity.id} className="flex gap-3 items-start animate-fade-in">
                   <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${activity.type === 'CHECK_IN' ? 'bg-green-500' :
-                      activity.type === 'MISSION' ? 'bg-blue-500' : 'bg-primary'
+                    activity.type === 'MISSION' ? 'bg-blue-500' : 'bg-primary'
                     }`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground leading-tight truncate">{activity.description}</p>

@@ -155,3 +155,22 @@ export async function claimDailyCheckIn(walletAddress: string) {
         return { success: false, message: "Failed to claim check-in." }
     }
 }
+
+export async function updateProfileImage(walletAddress: string, imageUrl: string) {
+    try {
+        const user = await db.user.findUnique({ where: { walletAddress } })
+        if (!user) return { success: false, message: "User not found" }
+
+        await db.user.update({
+            where: { walletAddress },
+            data: { profileImageUrl: imageUrl }
+        })
+
+        revalidatePath('/profile')
+        revalidatePath('/leaderboard')
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating profile image:", error)
+        return { success: false, message: "Failed to update profile image" }
+    }
+}

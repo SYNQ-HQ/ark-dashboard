@@ -3,11 +3,16 @@
 import { cloudinary } from "@/lib/storage"
 import { db } from "@/lib/db"
 
-export async function getUploadSignature(adminId: string) {
+export async function getUploadSignature(userId: string, requireAdmin = true) {
     try {
         // Authenticate
-        const user = await db.user.findUnique({ where: { id: adminId } })
-        if (!user || user.role !== 'ADMIN') {
+        const user = await db.user.findUnique({ where: { id: userId } })
+        if (!user) {
+            return { success: false, message: "Unauthorized" }
+        }
+
+        // Check admin requirement
+        if (requireAdmin && user.role !== 'ADMIN') {
             return { success: false, message: "Unauthorized" }
         }
 

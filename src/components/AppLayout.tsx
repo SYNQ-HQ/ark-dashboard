@@ -71,7 +71,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         {user ? (
                             <>
                                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                                    <span className="material-icons text-muted-foreground">person</span>
+                                    {user.profileImageUrl ? (
+                                        <img
+                                            src={user.profileImageUrl}
+                                            alt={user.username || 'Profile'}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="material-icons text-muted-foreground">person</span>
+                                    )}
                                 </div>
                                 <div className="overflow-hidden">
                                     <p className="text-sm font-semibold truncate">{user.username}</p>

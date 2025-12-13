@@ -85,3 +85,112 @@ export async function completeMission(walletAddress: string, missionId: string) 
         return { success: false }
     }
 }
+
+export async function createMission(formData: FormData) {
+    try {
+        const adminId = formData.get('adminId') as string
+        if (!adminId) return { success: false, message: "Unauthorized" }
+
+        const admin = await db.user.findUnique({ where: { id: adminId } })
+        if (!admin || admin.role !== 'ADMIN') {
+            return { success: false, message: "Unauthorized: Admin access required" }
+        }
+
+        const title = formData.get('title') as string
+        const description = formData.get('description') as string
+        const points = parseInt(formData.get('points') as string)
+        const type = formData.get('type') as string
+        const frequency = formData.get('frequency') as string
+        const imageUrl = formData.get('imageUrl') as string | null
+
+        await db.mission.create({
+            data: {
+                title,
+                description,
+                points,
+                type,
+                frequency,
+                imageUrl: imageUrl || null
+            }
+        })
+
+        await logActivity(admin.id, "ADMIN_MISSION_CREATE", `Created mission: ${title} (${points} pts)`)
+
+        const { revalidatePath } = await import('next/cache')
+        revalidatePath('/admin/missions')
+        revalidatePath('/missions')
+        return { success: true }
+    } catch (error) {
+        console.error("Create mission error:", error)
+        return { success: false, message: "Failed to create mission" }
+    }
+}
+
+export async function updateMission(formData: FormData) {
+    try {
+        const adminId = formData.get('adminId') as string
+        const missionId = formData.get('missionId') as string
+
+        if (!adminId) return { success: false, message: "Unauthorized" }
+
+        const admin = await db.user.findUnique({ where: { id: adminId } })
+        if (!admin || admin.role !== 'ADMIN') {
+            return { success: false, message: "Unauthorized: Admin access required" }
+        }
+
+        const title = formData.get('title') as string
+        const description = formData.get('description') as string
+        const points = parseInt(formData.get('points') as string)
+        const type = formData.get('type') as string
+        const frequency = formData.get('frequency') as string
+        const imageUrl = formData.get('imageUrl') as string | null
+
+        await db.mission.update({
+            where: { id: missionId },
+            data: {
+                title,
+                description,
+                points,
+                type,
+                frequency,
+                imageUrl: imageUrl || null
+            }
+        })
+
+        await logActivity(admin.id, "ADMIN_MISSION_UPDATE", `Updated mission: ${title}`)
+
+        const { revalidatePath } = await import('next/cache')
+        revalidatePath('/admin/missions')
+        revalidatePath('/missions')
+        return { success: true }
+    } catch (error) {
+        console.error("Update mission error:", error)
+        return { success: false, message: "Failed to update mission" }
+    }
+}
+
+export async function deleteMission(missionId: string, adminId: string) {
+    try {
+        if (!adminId) return { success: false, message: "Unauthorized" }
+
+        const admin = await db.user.findUnique({ where: { id: adminId } })
+        if (!admin || admin.role !== 'ADMIN') {
+            return { success: false, message: "Unauthorized: Admin access required" }
+        }
+
+        const mission = await db.mission.findUnique({ where: { id: missionId } })
+        if (!mission) return { success: false, message: "Mission not found" }
+
+        await db.mission.delete({ where: { id: missionId } })
+
+        await logActivity(admin.id, "ADMIN_MISSION_DELETE", `Deleted mission: ${mission.title}`)
+
+        const { revalidatePath } = await import('next/cache')
+        revalidatePath('/admin/missions')
+        revalidatePath('/missions')
+        return { success: true }
+    } catch (error) {
+        console.error("Delete mission error:", error)
+        return { success: false, message: "Failed to delete mission" }
+    }
+}

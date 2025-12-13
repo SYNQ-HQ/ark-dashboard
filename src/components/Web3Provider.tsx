@@ -22,7 +22,16 @@ const config = getDefaultConfig({
     ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            staleTime: 1000 * 60 * 5, // 5 minutes
+        },
+    },
+});
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
     return (
