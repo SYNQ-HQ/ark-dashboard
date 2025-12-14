@@ -15,6 +15,25 @@ export async function fetchImpactStories() {
     }
 }
 
+// Helper to generate slug
+function generateSlug(title: string) {
+    return title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+}
+
+export async function fetchImpactStoryBySlug(slug: string) {
+    try {
+        return await db.impactStory.findUnique({
+            where: { slug }
+        })
+    } catch (error) {
+        console.error("Error fetching impact story:", error)
+        return null
+    }
+}
+
 export async function createImpactStory(formData: FormData) {
     try {
         const adminId = formData.get('adminId') as string
@@ -29,6 +48,16 @@ export async function createImpactStory(formData: FormData) {
         const description = formData.get('description') as string
         const imageUrl = formData.get('imageUrl') as string || null
 
+        // Generate unique slug
+        let baseSlug = generateSlug(title);
+        let slug = baseSlug;
+        let counter = 1;
+
+        while (await db.impactStory.findUnique({ where: { slug } })) {
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+
         // New extended fields
         const location = formData.get('location') as string | null
         const dateStr = formData.get('date') as string | null
@@ -40,6 +69,7 @@ export async function createImpactStory(formData: FormData) {
 
         await db.impactStory.create({
             data: {
+                slug,
                 title,
                 description,
                 imageUrl,
@@ -79,6 +109,8 @@ export async function updateImpactStory(formData: FormData) {
         const description = formData.get('description') as string
         const imageUrl = formData.get('imageUrl') as string || null
 
+        // We don't update slug to preserve SEO
+
         // New extended fields
         const location = formData.get('location') as string | null
         const dateStr = formData.get('date') as string | null
@@ -108,6 +140,8 @@ export async function updateImpactStory(formData: FormData) {
 
         revalidatePath('/impact')
         revalidatePath('/admin/impact')
+        // Also revalidate the specific story page if we could, but we don't know the slug here easily without fetching.
+        // Broad revalidation is fine.
         return { success: true }
     } catch (error) {
         console.error("Update impact error:", error)
@@ -143,4 +177,22 @@ export async function deleteImpactStoryAction(formData: FormData) {
     const storyId = formData.get('storyId') as string;
     const adminId = formData.get('adminId') as string;
     return await deleteImpactStory(storyId, adminId);
+}
+
+export async function donateToImpact(storyId: string, amount: number) {
+    try {
+        await db.impactStory.update({
+            where: { id: storyId },
+            data: {
+                raised: { increment: amount },
+                supporters: { increment: 1 }
+            }
+        });
+
+        revalidatePath('/impact');
+        return { success: true };
+    } catch (error) {
+        console.error("Donation processing error:", error);
+        return { success: false, message: "Failed to process donation" };
+    }
 }

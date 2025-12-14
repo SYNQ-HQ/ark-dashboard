@@ -65,7 +65,12 @@ export default function EligibilityPage() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">Your Balance</p>
-                            <p className="text-2xl font-bold text-foreground">$5,000 ACT</p>
+                            <p className="text-2xl font-bold text-foreground">
+                                {user.actBalance
+                                    ? `${parseFloat(user.actBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${user.actSymbol || 'ACT'}`
+                                    : "0 ACT"
+                                }
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-6 p-6 border border-border rounded-xl bg-muted/10">
@@ -74,8 +79,12 @@ export default function EligibilityPage() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">Days Held</p>
-                            {/* Mock data for days held as we don't track it yet */}
-                            <p className="text-2xl font-bold text-foreground">35 / 25 Days</p>
+                            <p className="text-2xl font-bold text-foreground">
+                                {user.holdingStartedAt
+                                    ? `${Math.floor((Date.now() - new Date(user.holdingStartedAt).getTime()) / (1000 * 60 * 60 * 24))} / 25 Days`
+                                    : "0 / 25 Days"
+                                }
+                            </p>
                         </div>
                     </div>
                 </div>

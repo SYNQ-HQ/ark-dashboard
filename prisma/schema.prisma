@@ -29,6 +29,7 @@ model User {
   role          Role      @default(USER)
   isBanned      Boolean   @default(false)
   lastUsernameChange DateTime?
+  holdingStartedAt DateTime? // Tracks when user first met the $250 holding requirement
   activities    UserActivity[]
 }
 
@@ -125,6 +126,7 @@ model UserBadge {
 
 model ImpactStory {
   id String @id @default(cuid())
+  slug String @unique // SEO-friendly URL
   title String
   description String
   imageUrl String?

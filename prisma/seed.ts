@@ -52,6 +52,7 @@ async function main() {
     await prisma.impactStory.create({
         data: {
             title: "Building a School",
+            slug: "building-a-school",
             description: "Funded construction of a new school.",
             imageUrl: "https://via.placeholder.com/600x400"
         }

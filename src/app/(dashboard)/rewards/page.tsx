@@ -36,6 +36,7 @@ export default function RewardsPage() {
         loadRewards();
     }, []);
 
+
     async function handleRedeem(rewardId: string) {
         if (!user) {
             toast.error("Please connect your wallet first.");
@@ -87,45 +88,49 @@ export default function RewardsPage() {
             <p className="text-muted-foreground mb-8">Your Points: <span className="text-primary font-bold">{userPoints.toLocaleString()}</span></p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-ark-lg">
-                {rewards.map((reward) => (
-                    <div
-                        key={reward.id}
-                        className="group bg-background border border-border rounded-xl p-4 text-center hover:border-primary/50 transition-all duration-300 hover:shadow-premium-sm flex flex-col hover:-translate-y-1"
-                    >
-                        <div className="relative overflow-hidden rounded-lg mb-4 aspect-square bg-muted/20">
-                            {reward.imageUrl ? (
-                                <img
-                                    src={reward.imageUrl}
-                                    alt={reward.name}
-                                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                                />
-                            ) : (
-                                <Image
-                                    src={`https://via.placeholder.com/300?text=${encodeURIComponent(reward.name)}`}
-                                    alt={reward.name}
-                                    fill
-                                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                            )}
+                {rewards.map((reward) => {
+
+                    return (
+                        <div
+                            key={reward.id}
+                            className="group bg-background border border-border rounded-xl p-4 text-center hover:border-primary/50 transition-all duration-300 hover:shadow-premium-sm flex flex-col hover:-translate-y-1"
+                        >
+                            <div className="relative overflow-hidden rounded-lg mb-4 aspect-square bg-muted/20">
+                                {reward.imageUrl ? (
+                                    <Image
+                                        src={reward.imageUrl}
+                                        alt={reward.name}
+                                        fill
+                                        className="object-cover  w-full h-full transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                ) : (
+                                    <Image
+                                        src={`https://via.placeholder.com/300?text=${encodeURIComponent(reward.name)}`}
+                                        alt={reward.name}
+                                        fill
+                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                )}
+                            </div>
+                            <p className="font-semibold mb-2 text-foreground line-clamp-1 text-lg">
+                                {reward.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[2.5em]">{reward.description}</p>
+                            <p className="text-primary font-bold mb-6 text-xl">
+                                {reward.cost.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">PTS</span>
+                            </p>
+                            <div className="mt-auto">
+                                <button
+                                    onClick={() => handleRedeem(reward.id)}
+                                    className={`w-full rounded-lg px-4 py-3 font-medium transition-all ${userPoints < reward.cost ? "bg-muted text-muted-foreground cursor-not-allowed opacity-70" : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg active:scale-[0.98]"}`}
+                                    disabled={userPoints < reward.cost}
+                                >
+                                    {userPoints < reward.cost ? "Not Enough Points" : "Redeem Reward"}
+                                </button>
+                            </div>
                         </div>
-                        <p className="font-semibold mb-2 text-foreground line-clamp-1 text-lg">
-                            {reward.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[2.5em]">{reward.description}</p>
-                        <p className="text-primary font-bold mb-6 text-xl">
-                            {reward.cost.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">PTS</span>
-                        </p>
-                        <div className="mt-auto">
-                            <button
-                                onClick={() => handleRedeem(reward.id)}
-                                className={`w-full rounded-lg px-4 py-3 font-medium transition-all ${userPoints < reward.cost ? "bg-muted text-muted-foreground cursor-not-allowed opacity-70" : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg active:scale-[0.98]"}`}
-                                disabled={userPoints < reward.cost}
-                            >
-                                {userPoints < reward.cost ? "Not Enough Points" : "Redeem Reward"}
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
         </div>
     );

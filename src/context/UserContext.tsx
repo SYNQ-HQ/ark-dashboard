@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect, useBalance } from 'wagmi';
 import { auth } from '@/actions/auth';
 import { fetchDashboardData } from '@/actions/dashboard';
 // We might need types here, but let's keep it simple for now or import
@@ -25,6 +25,10 @@ interface User {
     createdAt: string | Date;
     completedMissionsCount?: number;
     badges?: { badge: { id: string; name: string; icon: string } }[];
+    bnbBalance?: string;
+    actBalance?: string;
+    actSymbol?: string;
+    holdingStartedAt?: string | Date | null;
 }
 
 interface UserContextType {
@@ -44,6 +48,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const { disconnect } = useDisconnect();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+
+    // Fetch Balances
+    const { data: bnbBalance } = useBalance({
+        address: address,
+    });
+
+    const { data: actBalance } = useBalance({
+        address: address,
+        token: '0x345F6423cEf697926C23dC010Eb1B96f8268bcec',
+    });
 
     // Comprehensive cleanup function
     const clearAllState = useCallback(() => {
@@ -139,8 +153,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         };
     }, []);
 
+    // Merge balances into user object
+    const userWithBalances = user ? {
+        ...user,
+        bnbBalance: bnbBalance?.formatted,
+        actBalance: actBalance?.formatted,
+        actSymbol: actBalance?.symbol
+    } : null;
+
     return (
-        <UserContext.Provider value={{ user, loading, refetchUser: loadUser }}>
+        <UserContext.Provider value={{ user: userWithBalances, loading, refetchUser: loadUser }}>
             {children}
         </UserContext.Provider>
     );

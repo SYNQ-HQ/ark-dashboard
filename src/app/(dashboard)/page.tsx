@@ -171,12 +171,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Eligibility Card */}
       <div className="bg-card text-card-foreground border border-card-border rounded-lg p-ark-lg shadow-premium hover-elevate transition-premium flex flex-col justify-between">
         <div>
-          <h2 className="text-xl font-semibold mb-2 text-foreground tracking-tight">Holder Reward Eligibility</h2>
+          <div className="flex justify-between items-start mb-2">
+            <h2 className="text-xl font-semibold text-foreground tracking-tight">Holder Reward</h2>
+            {user.actBalance && (
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-mono">
+                {parseFloat(user.actBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} {user.actSymbol || 'ACT'}
+              </span>
+            )}
+          </div>
           <p className="text-muted-foreground mb-6 text-sm">
-            Hold $250 of $ACT for 25 days to qualify.
+            Hold $250 of $ACT to qualify.
           </p>
         </div>
         <div>
@@ -196,7 +202,14 @@ export default function DashboardPage() {
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
         <h2 className="text-xl font-semibold mb-2 relative z-10">ARK Points</h2>
         <p className="text-6xl font-black text-primary mb-2 tracking-tighter animate-scale-in relative z-10">{user.points.toLocaleString()}</p>
-        <p className="text-muted-foreground text-sm relative z-10">Redeem for rewards in the store!</p>
+        <div className="relative z-10 flex flex-col gap-1 items-center">
+          <p className="text-muted-foreground text-sm">Redeem for rewards!</p>
+          {user.bnbBalance && (
+            <div className="mt-2 text-xs font-mono text-muted-foreground/80 bg-background/50 px-2 py-1 rounded backdrop-blur-sm border border-border/50">
+              {parseFloat(user.bnbBalance).toFixed(4)} BNB
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Daily Missions Card (Spans 2 columns) */}

@@ -10,9 +10,19 @@ export async function verifyEligibility(walletAddress: string) {
         // In a real app, check on-chain or off-chain criteria here.
         // For now, always approve.
 
+        const user = await db.user.findUnique({ where: { walletAddress } })
+        if (!user) return { success: false, message: "User not found" }
+
+        // Logic: If not already tracking holding start, set it now.
+        const data: any = { isEligible: true }
+
+        if (!user.holdingStartedAt) {
+            data.holdingStartedAt = new Date()
+        }
+
         await db.user.update({
             where: { walletAddress },
-            data: { isEligible: true }
+            data
         })
 
         revalidatePath('/eligibility')

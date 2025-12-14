@@ -17,7 +17,7 @@ import {
 
 const config = getDefaultConfig({
     appName: 'ARK Dashboard',
-    projectId: 'YOUR_PROJECT_ID', // Replace with a real WalletConnect ID if needed, or use a placeholder for now
+    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
     chains: [bsc],
     ssr: true, // If your dApp uses server side rendering (SSR)
 });
