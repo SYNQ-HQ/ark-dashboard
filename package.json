@@ -5,9 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "prisma generate && prisma migrate deploy && next build --webpack",
+    "build": "prisma generate && prisma migrate dev && next build --webpack",
+    "build:prod": "prisma generate && prisma migrate deploy && next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:reset": "prisma migrate reset --force",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "prisma:studio": "prisma studio",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",

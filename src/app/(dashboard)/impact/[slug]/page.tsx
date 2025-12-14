@@ -4,8 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export default async function ImpactStoryPage({ params }: { params: { slug: string } }) {
-    // In Next.js 15, params is a Promise. Treating nicely.
+interface PageProps {
+    params: Promise<{ slug: string }>;
+}
+
+export default async function ImpactStoryPage({ params }: PageProps) {
     const { slug } = await params;
     const story = await fetchImpactStoryBySlug(slug);
 
