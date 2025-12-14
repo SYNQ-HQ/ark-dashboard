@@ -12,7 +12,8 @@ interface Mission {
     title: string;
     description: string;
     type: string;
-    status: string;
+    status: string; // Global status
+    userStatus?: string; // User status
     points: number;
     imageUrl?: string | null;
 }
@@ -41,7 +42,6 @@ export default function MissionsPage() {
         if (!user) return;
 
         toast.promise(
-            // Promise function
             completeMission(user.walletAddress, missionId),
             {
                 loading: 'Verifying mission...',
@@ -86,34 +86,58 @@ export default function MissionsPage() {
             <h2 className="text-2xl font-bold mb-6 text-foreground tracking-tight">Daily Missions</h2>
             <div className="divide-y divide-border/50">
                 {missions.map((mission) => (
-                    <div key={mission.id} className="flex items-start gap-4 py-6 group">
+                    <div key={mission.id} className="flex flex-col md:flex-row items-start gap-4 py-6 group border-b border-border/50 last:border-0 hover:bg-muted/5 transition-colors pl-2 rounded-lg">
                         {mission.imageUrl && (
                             <img
                                 src={mission.imageUrl}
                                 alt={mission.title}
-                                className="w-24 h-24 object-cover rounded-lg flex-shrink-0 shadow-sm"
+                                className="w-full md:w-24 h-24 object-cover rounded-lg flex-shrink-0 shadow-sm"
                             />
                         )}
-                        <div className="flex-1">
-                            <p className="font-semibold text-lg group-hover:text-primary transition-colors">{mission.title}</p>
-                            <p className="text-sm text-muted-foreground mt-1">{mission.description}</p>
-                            <span className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground mt-2 inline-block">{mission.type} • +{mission.points} ✨</span>
-                        </div>
-                        {mission.status === 'COMPLETED' ? (
-                            <div className="flex items-center text-green-500 gap-2 flex-shrink-0">
-                                <span className="font-medium">Completed</span>
-                                <CheckCircleIcon />
+                        <div className="flex-1 w-full">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{mission.title}</h3>
+                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{mission.description}</p>
+                                </div>
+                                <span className={`text-xs px-2 py-1 rounded capitalize ${mission.status === 'active' ? 'bg-green-100 text-green-700' :
+                                    mission.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+                                    }`}>
+                                    {mission.status || 'Active'}
+                                </span>
                             </div>
-                        ) : (
-                            <button
-                                onClick={() => handleComplete(mission.id)}
-                                className="bg-primary text-primary-foreground rounded-lg px-6 py-2 font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all flex-shrink-0"
-                            >
-                                Complete
-                            </button>
-                        )}
+
+                            <div className="mt-4 flex items-center justify-between">
+                                <span className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground flex items-center gap-1">
+                                    {mission.type} • +{mission.points} ✨
+                                </span>
+
+                                {mission.status !== 'completed' && (
+                                    <>
+                                        {mission.userStatus === 'COMPLETED' ? (
+                                            <div className="flex items-center text-green-500 gap-2">
+                                                <span className="font-medium">Completed</span>
+                                                <CheckCircleIcon />
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleComplete(mission.id)}
+                                                className="bg-primary text-primary-foreground rounded-lg px-6 py-2 text-sm font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all"
+                                            >
+                                                Complete
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 ))}
+                {missions.length === 0 && (
+                    <div className="py-8 text-center text-muted-foreground">
+                        No active missions available. Check back later!
+                    </div>
+                )}
             </div>
         </div>
     );

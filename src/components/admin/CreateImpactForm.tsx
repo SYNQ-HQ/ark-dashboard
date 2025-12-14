@@ -86,6 +86,43 @@ export default function CreateImpactForm() {
                 <textarea name="description" required className="w-full px-3 py-2 rounded-lg border border-border bg-background" placeholder="Details..." rows={3} />
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">Location</label>
+                    <input name="location" className="w-full px-3 py-2 rounded-lg border border-border bg-background" placeholder="e.g. Nairobi, Kenya" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">Date</label>
+                    <input type="date" name="date" className="w-full px-3 py-2 rounded-lg border border-border bg-background" />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">Fundraising Goal ($)</label>
+                    <input type="number" name="goal" step="0.01" className="w-full px-3 py-2 rounded-lg border border-border bg-background" placeholder="0.00" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">Current Raised ($)</label>
+                    <input type="number" name="raised" step="0.01" defaultValue={0} className="w-full px-3 py-2 rounded-lg border border-border bg-background" />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">Supporters</label>
+                    <input type="number" name="supporters" defaultValue={0} className="w-full px-3 py-2 rounded-lg border border-border bg-background" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <select name="status" className="w-full px-3 py-2 rounded-lg border border-border bg-background">
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="paused">Paused</option>
+                    </select>
+                </div>
+            </div>
+
             <div>
                 <label className="block text-sm font-medium mb-1">Image (Optional)</label>
                 <input

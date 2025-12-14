@@ -10,7 +10,7 @@ const adminNavItems = [
     { id: "users", label: "Users", icon: <ProfileIcon />, path: "/admin/users" },
     { id: "missions", label: "Missions", icon: <MissionsIcon />, path: "/admin/missions" },
     { id: "rewards", label: "Rewards", icon: <RewardsIcon />, path: "/admin/rewards" },
-    { id: "impact", label: "Impact", icon: <MissionsIcon />, path: "/admin/impact" }, // Reusing MissionsIcon for now
+    { id: "impact", label: "Impact", icon: <MissionsIcon />, path: "/admin/impact" },
     { id: "badges", label: "Badges", icon: <CheckCircleIcon />, path: "/admin/badges" },
 ];
 

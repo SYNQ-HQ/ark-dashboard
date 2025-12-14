@@ -128,5 +128,11 @@ model ImpactStory {
   title String
   description String
   imageUrl String?
+  location String?
+  date DateTime?
+  raised Float? @default(0)
+  goal Float?
+  supporters Int? @default(0)
+  status String? @default("active")
   createdAt DateTime @default(now())
 }

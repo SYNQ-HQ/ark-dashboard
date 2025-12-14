@@ -174,3 +174,43 @@ export async function updateProfileImage(walletAddress: string, imageUrl: string
         return { success: false, message: "Failed to update profile image" }
     }
 }
+
+export async function fetchUsers() {
+    try {
+        return await db.user.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: { _count: { select: { badges: true, missions: true } } }
+        });
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+    }
+}
+
+export async function updateUserRole(targetUserId: string, newRole: 'USER' | 'ADMIN', adminId: string) {
+    try {
+        const admin = await db.user.findUnique({ where: { id: adminId } });
+        if (!admin || admin.role !== 'ADMIN') {
+            return { success: false, message: "Unauthorized" };
+        }
+
+        await db.user.update({
+            where: { id: targetUserId },
+            data: { role: newRole }
+        });
+
+        await logActivity(adminId, "ADMIN_ROLE_CHANGE", `Changed role of user ${targetUserId} to ${newRole}`);
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating user role:", error);
+        return { success: false, message: "Failed to update user role" };
+    }
+}
+
+export async function toggleUserBanAction(formData: FormData) {
+    const targetUserId = formData.get('userId') as string;
+    const adminId = formData.get('adminId') as string;
+    return await toggleUserBan(targetUserId, adminId);
+}
+

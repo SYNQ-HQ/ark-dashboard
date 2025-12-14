@@ -12,7 +12,7 @@ interface Reward {
     name: string;
     cost: number;
     description: string;
-    image?: string | null;
+    imageUrl?: string | null;
 }
 
 export default function RewardsPage() {
@@ -93,13 +93,20 @@ export default function RewardsPage() {
                         className="group bg-background border border-border rounded-xl p-4 text-center hover:border-primary/50 transition-all duration-300 hover:shadow-premium-sm flex flex-col hover:-translate-y-1"
                     >
                         <div className="relative overflow-hidden rounded-lg mb-4 aspect-square bg-muted/20">
-                            {/* Use placeholder for now or reward.image if it existed */}
-                            <Image
-                                src={`https://via.placeholder.com/300?text=${encodeURIComponent(reward.name)}`}
-                                alt={reward.name}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
+                            {reward.imageUrl ? (
+                                <img
+                                    src={reward.imageUrl}
+                                    alt={reward.name}
+                                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                                />
+                            ) : (
+                                <Image
+                                    src={`https://via.placeholder.com/300?text=${encodeURIComponent(reward.name)}`}
+                                    alt={reward.name}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                            )}
                         </div>
                         <p className="font-semibold mb-2 text-foreground line-clamp-1 text-lg">
                             {reward.name}

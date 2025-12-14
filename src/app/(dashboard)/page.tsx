@@ -13,7 +13,8 @@ interface Mission {
   id: string;
   title: string;
   type: string;
-  status: string;
+  // status: string; // Removed from model
+  userStatus?: string;
   points: number;
   imageUrl?: string | null;
 }
@@ -53,7 +54,7 @@ export default function DashboardPage() {
     if (!user) return;
     const res = await completeMission(user.walletAddress, missionId);
     if (res.success) {
-      setMissions(prev => prev.map(m => m.id === missionId ? { ...m, status: 'COMPLETED' } : m));
+      setMissions(prev => prev.map(m => m.id === missionId ? { ...m, userStatus: 'COMPLETED' } : m));
       refetchUser();
 
       // Refresh activity log
@@ -210,10 +211,10 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => handleCompleteMission(mission.id)}
-                disabled={mission.status === 'COMPLETED'}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${mission.status === 'COMPLETED' ? "bg-green-500/20 text-green-600 cursor-default" : "bg-background border border-border text-foreground hover:bg-muted hover-elevate-2"}`}
+                disabled={mission.userStatus === 'COMPLETED'}
+                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${mission.userStatus === 'COMPLETED' ? "bg-green-500/20 text-green-600 cursor-default" : "bg-background border border-border text-foreground hover:bg-muted hover-elevate-2"}`}
               >
-                {mission.status === 'COMPLETED' ? "Completed" : "Complete"}
+                {mission.userStatus === 'COMPLETED' ? "Completed" : "Complete"}
               </button>
             </div>
           ))}

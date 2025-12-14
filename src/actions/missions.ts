@@ -15,12 +15,12 @@ export async function fetchMissions(walletAddress: string) {
 
         const missions = await db.mission.findMany()
 
-        // Map missions to include status
+        // Map missions to include user status
         return missions.map((mission: Mission) => {
             const userMission = user.missions.find((um: UserMission) => um.missionId === mission.id)
             return {
                 ...mission,
-                status: userMission?.status || 'PENDING'
+                userStatus: userMission?.status || 'PENDING' // User specific status
             }
         })
     } catch (error) {
@@ -103,6 +103,15 @@ export async function createMission(formData: FormData) {
         const frequency = formData.get('frequency') as string
         const imageUrl = formData.get('imageUrl') as string | null
 
+        // New fields
+        const location = formData.get('location') as string | null
+        const dateStr = formData.get('date') as string | null
+        const date = dateStr ? new Date(dateStr) : null
+        const raised = formData.get('raised') ? parseFloat(formData.get('raised') as string) : 0
+        const goal = formData.get('goal') ? parseFloat(formData.get('goal') as string) : null
+        const supporters = formData.get('supporters') ? parseInt(formData.get('supporters') as string) : 0
+        const status = formData.get('status') as string || 'active'
+
         await db.mission.create({
             data: {
                 title,
@@ -145,6 +154,15 @@ export async function updateMission(formData: FormData) {
         const frequency = formData.get('frequency') as string
         const imageUrl = formData.get('imageUrl') as string | null
 
+        // New fields
+        const location = formData.get('location') as string | null
+        const dateStr = formData.get('date') as string | null
+        const date = dateStr ? new Date(dateStr) : null
+        const raised = formData.get('raised') ? parseFloat(formData.get('raised') as string) : undefined
+        const goal = formData.get('goal') ? parseFloat(formData.get('goal') as string) : undefined
+        const supporters = formData.get('supporters') ? parseInt(formData.get('supporters') as string) : undefined
+        const status = formData.get('status') as string || undefined
+
         await db.mission.update({
             where: { id: missionId },
             data: {
@@ -168,6 +186,7 @@ export async function updateMission(formData: FormData) {
         return { success: false, message: "Failed to update mission" }
     }
 }
+
 
 export async function deleteMission(missionId: string, adminId: string) {
     try {

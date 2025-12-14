@@ -1,18 +1,15 @@
 "use client";
 
-import { updateMission } from "@/actions/missions";
+import { updateImpactStory } from "@/actions/impact";
 import { getUploadSignature } from "@/actions/upload";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 import { useState } from "react";
 
-interface Mission {
+interface ImpactStory {
     id: string;
     title: string;
     description: string;
-    type: string;
-    points: number;
-    frequency: string;
     imageUrl?: string | null;
     location?: string | null;
     date?: Date | null;
@@ -22,12 +19,12 @@ interface Mission {
     status?: string | null;
 }
 
-interface EditMissionModalProps {
-    mission: Mission;
+interface EditImpactStoryModalProps {
+    story: ImpactStory;
     onClose: () => void;
 }
 
-export default function EditMissionModal({ mission, onClose }: EditMissionModalProps) {
+export default function EditImpactStoryModal({ story, onClose }: EditImpactStoryModalProps) {
     const { user } = useUser();
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -39,7 +36,7 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
             return;
         }
 
-        let imageUrl = mission.imageUrl || "";
+        let imageUrl = story.imageUrl || "";
 
         // If user selected a new file, upload it
         if (file && !keepExistingImage) {
@@ -80,30 +77,30 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
         }
 
         formData.append("adminId", user.id);
-        formData.append("missionId", mission.id);
+        formData.append("storyId", story.id);
         if (imageUrl) formData.append("imageUrl", imageUrl);
 
-        const res = await updateMission(formData);
+        const res = await updateImpactStory(formData);
 
         if (res.success) {
-            toast.success("Mission updated!");
+            toast.success("Impact story updated!");
             onClose();
         } else {
-            toast.error(res.message || "Failed to update mission");
+            toast.error(res.message || "Failed to update story");
         }
     }
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <h3 className="font-bold text-lg mb-6">Edit Mission</h3>
+            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <h3 className="font-bold text-lg mb-6">Edit Impact Story</h3>
                 <form action={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">Title</label>
                         <input
                             name="title"
                             required
-                            defaultValue={mission.title}
+                            defaultValue={story.title}
                             className="w-full px-3 py-2 rounded-lg border border-border bg-background"
                         />
                     </div>
@@ -113,7 +110,7 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
                         <textarea
                             name="description"
                             required
-                            defaultValue={mission.description}
+                            defaultValue={story.description}
                             className="w-full px-3 py-2 rounded-lg border border-border bg-background"
                             rows={3}
                         />
@@ -121,40 +118,73 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Points</label>
+                            <label className="block text-sm font-medium mb-1">Location</label>
                             <input
-                                name="points"
+                                name="location"
+                                defaultValue={story.location || ''}
+                                className="w-full px-3 py-2 rounded-lg border border-border bg-background"
+                                placeholder="e.g. Kenya"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Date</label>
+                            <input
+                                type="date"
+                                name="date"
+                                defaultValue={story.date ? new Date(story.date).toISOString().split('T')[0] : ''}
+                                className="w-full px-3 py-2 rounded-lg border border-border bg-background"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Goal ($)</label>
+                            <input
                                 type="number"
-                                required
-                                defaultValue={mission.points}
+                                name="goal"
+                                step="0.01"
+                                defaultValue={story.goal || ''}
                                 className="w-full px-3 py-2 rounded-lg border border-border bg-background"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Frequency</label>
-                            <select name="frequency" defaultValue={mission.frequency} className="w-full px-3 py-2 rounded-lg border border-border bg-background">
-                                <option value="DAILY">Daily</option>
-                                <option value="ONETIME">One-Time</option>
+                            <label className="block text-sm font-medium mb-1">Raised ($)</label>
+                            <input
+                                type="number"
+                                name="raised"
+                                step="0.01"
+                                defaultValue={story.raised || 0}
+                                className="w-full px-3 py-2 rounded-lg border border-border bg-background"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Supporters</label>
+                            <input
+                                type="number"
+                                name="supporters"
+                                defaultValue={story.supporters || 0}
+                                className="w-full px-3 py-2 rounded-lg border border-border bg-background"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Status</label>
+                            <select name="status" defaultValue={story.status || 'active'} className="w-full px-3 py-2 rounded-lg border border-border bg-background">
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="paused">Paused</option>
                             </select>
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Type</label>
-                        <select name="type" defaultValue={mission.type} className="w-full px-3 py-2 rounded-lg border border-border bg-background">
-                            <option value="SOCIAL">Social</option>
-                            <option value="ONCHAIN">On-Chain</option>
-                            <option value="REFERRAL">Referral</option>
-                        </select>
-                    </div>
-
-                    {/* Campaign Details Section removed */}
-
-                    <div>
                         <label className="block text-sm font-medium mb-1">Image</label>
-                        {mission.imageUrl && (
+                        {story.imageUrl && (
                             <div className="mb-2">
-                                <img src={mission.imageUrl} alt="Current" className="w-20 h-20 object-cover rounded-lg" />
+                                <img src={story.imageUrl} alt="Current" className="w-full h-32 object-cover rounded-lg" />
                                 <label className="flex items-center gap-2 mt-2 text-sm">
                                     <input
                                         type="checkbox"

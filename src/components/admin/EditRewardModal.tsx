@@ -1,33 +1,30 @@
 "use client";
 
-import { updateMission } from "@/actions/missions";
+import { updateReward } from "@/actions/rewards";
 import { getUploadSignature } from "@/actions/upload";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 import { useState } from "react";
 
-interface Mission {
+interface Reward {
     id: string;
-    title: string;
+    name: string;
     description: string;
-    type: string;
-    points: number;
-    frequency: string;
+    cost: number;
+    stock: number | null;
     imageUrl?: string | null;
-    location?: string | null;
-    date?: Date | null;
-    raised?: number | null;
-    goal?: number | null;
-    supporters?: number | null;
-    status?: string | null;
+    _count?: {
+        redemptions: number;
+    };
 }
 
-interface EditMissionModalProps {
-    mission: Mission;
+interface EditRewardModalProps {
+    reward: Reward;
     onClose: () => void;
+    onUpdate: () => void;
 }
 
-export default function EditMissionModal({ mission, onClose }: EditMissionModalProps) {
+export default function EditRewardModal({ reward, onClose, onUpdate }: EditRewardModalProps) {
     const { user } = useUser();
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -39,7 +36,7 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
             return;
         }
 
-        let imageUrl = mission.imageUrl || "";
+        let imageUrl = reward.imageUrl || "";
 
         // If user selected a new file, upload it
         if (file && !keepExistingImage) {
@@ -80,30 +77,31 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
         }
 
         formData.append("adminId", user.id);
-        formData.append("missionId", mission.id);
+        formData.append("rewardId", reward.id);
         if (imageUrl) formData.append("imageUrl", imageUrl);
 
-        const res = await updateMission(formData);
+        const res = await updateReward(formData);
 
         if (res.success) {
-            toast.success("Mission updated!");
+            toast.success("Reward updated!");
+            onUpdate();
             onClose();
         } else {
-            toast.error(res.message || "Failed to update mission");
+            toast.error(res.message || "Failed to update reward");
         }
     }
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <h3 className="font-bold text-lg mb-6">Edit Mission</h3>
+            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <h3 className="font-bold text-lg mb-6">Edit Reward</h3>
                 <form action={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1">Title</label>
+                        <label className="block text-sm font-medium mb-1">Name</label>
                         <input
-                            name="title"
+                            name="name"
                             required
-                            defaultValue={mission.title}
+                            defaultValue={reward.name}
                             className="w-full px-3 py-2 rounded-lg border border-border bg-background"
                         />
                     </div>
@@ -113,7 +111,7 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
                         <textarea
                             name="description"
                             required
-                            defaultValue={mission.description}
+                            defaultValue={reward.description}
                             className="w-full px-3 py-2 rounded-lg border border-border bg-background"
                             rows={3}
                         />
@@ -121,40 +119,32 @@ export default function EditMissionModal({ mission, onClose }: EditMissionModalP
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Points</label>
+                            <label className="block text-sm font-medium mb-1">Cost (PTS)</label>
                             <input
-                                name="points"
                                 type="number"
+                                name="cost"
                                 required
-                                defaultValue={mission.points}
+                                defaultValue={reward.cost}
                                 className="w-full px-3 py-2 rounded-lg border border-border bg-background"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Frequency</label>
-                            <select name="frequency" defaultValue={mission.frequency} className="w-full px-3 py-2 rounded-lg border border-border bg-background">
-                                <option value="DAILY">Daily</option>
-                                <option value="ONETIME">One-Time</option>
-                            </select>
+                            <label className="block text-sm font-medium mb-1">Stock</label>
+                            <input
+                                type="number"
+                                name="stock"
+                                placeholder="Empty = Infinite"
+                                defaultValue={reward.stock ?? ''}
+                                className="w-full px-3 py-2 rounded-lg border border-border bg-background"
+                            />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Type</label>
-                        <select name="type" defaultValue={mission.type} className="w-full px-3 py-2 rounded-lg border border-border bg-background">
-                            <option value="SOCIAL">Social</option>
-                            <option value="ONCHAIN">On-Chain</option>
-                            <option value="REFERRAL">Referral</option>
-                        </select>
-                    </div>
-
-                    {/* Campaign Details Section removed */}
-
-                    <div>
                         <label className="block text-sm font-medium mb-1">Image</label>
-                        {mission.imageUrl && (
+                        {reward.imageUrl && (
                             <div className="mb-2">
-                                <img src={mission.imageUrl} alt="Current" className="w-20 h-20 object-cover rounded-lg" />
+                                <img src={reward.imageUrl} alt="Current" className="w-full h-32 object-cover rounded-lg" />
                                 <label className="flex items-center gap-2 mt-2 text-sm">
                                     <input
                                         type="checkbox"
