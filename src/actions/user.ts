@@ -3,6 +3,19 @@
 import { db } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { logActivity } from './activity'
+import { ArkRank } from '@prisma/client'
+
+const IMPACT_STATS = [
+    "Today, ARK holders funded 47 acts of kindness.",
+    "You're in the top 23% of contributors.",
+    "Your streak has inspired 3 new members.",
+    "Together we've raised over $5,000 this week.",
+    "Consistency is the currency of impact."
+];
+
+function getRandomImpactStat() {
+    return IMPACT_STATS[Math.floor(Math.random() * IMPACT_STATS.length)];
+}
 
 // Helper to check availability without updating
 export async function checkUsernameAvailability(username: string) {
@@ -133,23 +146,80 @@ export async function claimDailyCheckIn(walletAddress: string) {
             }
         }
 
+        // Calculate longest streak
+        const currentLongest = user.streak?.longestStreak || 0;
+        const newLongest = Math.max(currentLongest, newStreakCount);
+
+        // Update Streak
         await db.streak.upsert({
             where: { userId: user.id },
             update: {
                 currentStreak: newStreakCount,
+                longestStreak: newLongest,
                 lastCheckIn: now
             },
             create: {
                 userId: user.id,
                 currentStreak: 1,
+                longestStreak: 1,
                 lastCheckIn: now
             }
         })
 
-        await logActivity(user.id, "CHECK_IN", `Claimed daily blessing (+${newStreakCount} day streak)`)
+        // Create Log
+        const points = 10;
+        await db.checkInLog.create({
+            data: {
+                userId: user.id,
+                points,
+                date: now
+            }
+        })
+
+        // Update User Points
+        await db.user.update({
+            where: { id: user.id },
+            data: { points: { increment: points } }
+        })
+
+        // Check Rank Promotion (Recruit -> Sentinel)
+        let promoted = false;
+        let newRank = user.arkRank;
+
+        if (user.arkRank === 'RECRUIT' && newStreakCount >= 7) {
+            promoted = true;
+            newRank = 'SENTINEL';
+
+            await db.user.update({
+                where: { id: user.id },
+                data: { arkRank: 'SENTINEL' }
+            });
+
+            await db.rankHistory.create({
+                data: {
+                    userId: user.id,
+                    rank: 'SENTINEL',
+                    promotedAt: now
+                }
+            });
+
+            await logActivity(user.id, "RANK_PROMOTION", "Promoted to Sentinel");
+        }
+
+        await logActivity(user.id, "CHECK_IN", `Claimed daily blessing (+${points} pts, streak: ${newStreakCount})`)
 
         revalidatePath('/')
-        return { success: true }
+
+        const stat = getRandomImpactStat();
+
+        return {
+            success: true,
+            points,
+            streak: newStreakCount,
+            promoted,
+            newRank,
+            impactStat: stat
+        }
     } catch (error) {
         console.error("Check-in error:", error)
         return { success: false, message: "Failed to claim check-in." }

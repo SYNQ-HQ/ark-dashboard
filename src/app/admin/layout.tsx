@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AdminGuard from "@/components/AdminGuard";
 import { DashboardIcon, MissionsIcon, RewardsIcon, ProfileIcon, CheckCircleIcon } from "@/components/Icons"; // Reusing existing icons
+import Image from "next/image";
 
 const adminNavItems = [
     { id: "dashboard", label: "Overview", icon: <DashboardIcon />, path: "/admin" },
@@ -23,10 +24,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Admin Sidebar */}
                 <nav className="w-64 bg-slate-900 text-slate-100 border-r border-slate-800 flex flex-col py-6">
                     <div className="flex items-center justify-center h-16 mb-6">
-                        <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-red-500/20">
+                        {/* <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-red-500/20">
                             S
-                        </div>
-                        <span className="ml-3 font-bold text-lg tracking-wider">SUPER ADMIN</span>
+                        </div> */}
+                        <Image
+                            src="/logo.png"
+                            alt={"logo"} width={100} height={50}
+                            // fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <span className="ml-3 font-bold text-lg tracking-wider">ADMIN</span>
                     </div>
 
                     <div className="flex-1 space-y-1 px-3">

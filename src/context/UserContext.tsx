@@ -20,6 +20,7 @@ interface User {
     lastUsernameChange?: string | Date | null;
     streak?: {
         currentStreak: number;
+        longestStreak?: number;
         lastCheckIn: string | Date;
     } | null;
     createdAt: string | Date;
@@ -29,6 +30,14 @@ interface User {
     actBalance?: string;
     actSymbol?: string;
     holdingStartedAt?: string | Date | null;
+    arkRank?: string; // Using string to avoid strict enum issues in client if not needed
+    oathAcceptedAt?: string | Date | null;
+    oathDurationSeconds?: number | null;
+    communityStats?: {
+        totalCheckIns: number;
+        totalPoints: number;
+        activeUsers: number;
+    };
 }
 
 interface UserContextType {

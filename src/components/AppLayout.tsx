@@ -14,6 +14,11 @@ import {
     SpinWheelIcon,
     ProfileIcon,
 } from "./Icons";
+import Image from "next/image";
+import StreakCounter from "./dashboard/StreakCounter";
+import OathModal from "./onboarding/OathModal";
+import { getRankInfo } from "@/lib/ranks";
+import { ArkRank } from "@prisma/client";
 
 const navItems = [
     { id: "dashboard", label: "Dashboard", icon: <DashboardIcon />, path: "/" },
@@ -43,8 +48,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {/* Sidebar */}
             <nav className="w-20 hover:w-64 group transition-all duration-500 ease-in-out bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col py-6 z-50 shadow-xl">
                 <div className="flex items-center justify-center h-16 mb-6">
-                    <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary font-bold text-xl">A</div>
+                    <Image
+                        src="/logo.png"
+                        alt={"logo"}
+                        width={100} height={50}
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                 </div>
+
+                <StreakCounter />
 
                 <div className="flex-1 space-y-2 px-3">
                     {navItems.map((item) => {
@@ -82,8 +94,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                     )}
                                 </div>
                                 <div className="overflow-hidden">
-                                    <p className="text-sm font-semibold truncate">{user.username}</p>
-                                    <p className="text-xs text-muted-foreground truncate">{user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}</p>
+                                    <p className="text-sm font-semibold truncate flex items-center gap-2">
+                                        {user.username}
+                                    </p>
+                                    <p className={`text-[10px] font-bold uppercase tracking-wider ${getRankInfo(user.arkRank as ArkRank).color}`}>
+                                        {getRankInfo(user.arkRank as ArkRank).label}
+                                    </p>
                                 </div>
                             </>
                         ) : (
@@ -124,6 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                 </main>
             </div>
+            <OathModal isOpen={!!user && !user.oathAcceptedAt} onClose={() => { }} />
         </div>
     );
 }

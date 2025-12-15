@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { completeMission } from "@/actions/missions";
-import { claimDailyCheckIn } from "@/actions/user";
 import { getRecentActivity } from "@/actions/activity";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import DailyCheckIn from "@/components/dashboard/DailyCheckIn";
+import ImpactStatsCard from "@/components/dashboard/ImpactStatsCard";
 
 interface Mission {
   id: string;
@@ -30,7 +31,6 @@ export default function DashboardPage() {
   const { user, loading: userLoading, refetchUser } = useUser();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [claiming, setClaiming] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -67,38 +67,7 @@ export default function DashboardPage() {
     }
   }
 
-  // Check if user can claim today based on lastCheckIn (UTC)
-  const canClaimToday = () => {
-    if (!user?.streak?.lastCheckIn) return true;
 
-    const now = new Date();
-    const last = new Date(user.streak.lastCheckIn);
-
-    // Compare UTC dates
-    const isSameDay = last.getUTCFullYear() === now.getUTCFullYear() &&
-      last.getUTCMonth() === now.getUTCMonth() &&
-      last.getUTCDate() === now.getUTCDate();
-
-    return !isSameDay;
-  };
-
-  const alreadyClaimedToday = !canClaimToday();
-
-  const handleClaimCheckIn = async () => {
-    if (!user) return;
-    setClaiming(true);
-    const res = await claimDailyCheckIn(user.walletAddress);
-    setClaiming(false);
-
-    if (res.success) {
-      toast.success("Blessings claimed!");
-      refetchUser();
-      const activityData = await getRecentActivity(user.id);
-      setActivities(activityData);
-    } else {
-      toast.error(res.message || "Failed to claim");
-    }
-  }
 
   if (userLoading) {
     return <div className="p-8 text-center animate-pulse">Loading dashboard...</div>;
@@ -117,30 +86,7 @@ export default function DashboardPage() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-ark-lg animate-fade-in">
       {/* Daily Check-in Card & Activity Log */}
       <div className="bg-card text-card-foreground border border-card-border rounded-lg lg:col-span-1 lg:row-span-2 shadow-premium hover-elevate transition-premium overflow-hidden flex flex-col">
-        <div className="p-ark-lg pb-4">
-          <h2 className="text-xl font-semibold mb-4 text-foreground tracking-tight">Daily Check-in</h2>
-          <p className="text-muted-foreground mb-6">You&apos;re on a {user.streak?.currentStreak || 0}-day streak! 🔥</p>
-          <div className="flex space-x-3 mb-8 justify-center">
-            {[...Array(7)].map((_, i) => (
-              <div
-                key={i}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${i < (user.streak?.currentStreak || 0) ? "bg-primary text-primary-foreground scale-110 shadow-sm" : "bg-muted text-muted-foreground/50"}`}
-              >
-                {i < (user.streak?.currentStreak || 0) && <span className="material-icons text-sm">check</span>}
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={handleClaimCheckIn}
-            disabled={claiming || alreadyClaimedToday}
-            className={`rounded-lg px-6 py-3 w-full font-medium shadow-md transition-all duration-200 ${alreadyClaimedToday
-              ? "bg-green-500 text-white cursor-default"
-              : "bg-primary text-primary-foreground hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-              } disabled:opacity-50 disabled:pointer-events-none`}
-          >
-            {claiming ? "Claiming..." : alreadyClaimedToday ? "Claimed Today ✓" : "Claim Daily Blessings"}
-          </button>
-        </div>
+        <DailyCheckIn />
 
         {/* Activity Log Section */}
         <div className="flex-1 bg-muted/20 border-t border-border p-4 flex flex-col">
@@ -170,6 +116,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <ImpactStatsCard />
 
       <div className="bg-card text-card-foreground border border-card-border rounded-lg p-ark-lg shadow-premium hover-elevate transition-premium flex flex-col justify-between">
         <div>

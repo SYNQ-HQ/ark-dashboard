@@ -39,7 +39,7 @@ export default function LandingPage() {
 
             {/* Footer / Credits */}
             <div className="absolute bottom-8 text-center w-full z-10 opacity-50 text-sm">
-                <p>&copy; 2025 Synq Studio. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} <a href="https://poweredbysynq.com">Synq Labs</a>. All rights reserved.</p>
             </div>
         </div>
     );

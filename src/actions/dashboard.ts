@@ -23,6 +23,11 @@ export async function fetchDashboardData(walletAddress: string) {
             where: { frequency: 'DAILY' }
         })
 
+        // Community Stats
+        const totalCheckIns = await db.checkInLog.count();
+        const totalPointsAgg = await db.user.aggregate({ _sum: { points: true } });
+        const activeUsers = await db.user.count({ where: { points: { gt: 0 } } });
+
         // Simple logic: Completed missions count
         const completedMissionsCount = user.missions.length
 
@@ -31,7 +36,15 @@ export async function fetchDashboardData(walletAddress: string) {
             streak: user.streak,
             completedMissionsCount,
             totalMissionsToday,
-            isEligible: user.isEligible
+            isEligible: user.isEligible,
+            arkRank: (user as any).arkRank,
+            oathAcceptedAt: (user as any).oathAcceptedAt, // Cast to any to bypass stale type definition
+            oathDurationSeconds: (user as any).oathDurationSeconds,
+            communityStats: {
+                totalCheckIns,
+                totalPoints: totalPointsAgg._sum.points || 0,
+                activeUsers
+            }
         }
     } catch (error) {
         console.error('Error fetching dashboard data:', error)

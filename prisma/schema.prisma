@@ -31,6 +31,15 @@ model User {
   lastUsernameChange DateTime?
   holdingStartedAt DateTime? // Tracks when user first met the $250 holding requirement
   activities    UserActivity[]
+  
+  // ARK Features
+  timezone      String?
+  arkRank       ArkRank   @default(RECRUIT)
+  oathAcceptedAt DateTime?
+  oathDurationSeconds Int?
+  
+  checkInLogs   CheckInLog[]
+  rankHistory   RankHistory[]
 }
 
 model UserActivity {
@@ -41,6 +50,16 @@ model UserActivity {
   createdAt   DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+enum ArkRank {
+  RECRUIT
+  SENTINEL
+  OPERATIVE
+  VANGUARD
+  CAPTAIN
+  COMMANDER
+  HIGH_GUARDIAN
 }
 
 enum Role {
@@ -100,7 +119,28 @@ model Streak {
   currentStreak Int    @default(0)
   lastCheckIn DateTime @default(now())
 
+  longestStreak Int    @default(0)
+  lastFrozenAt  DateTime?
+
   user User @relation(fields: [userId], references: [id])
+}
+
+model CheckInLog {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime @default(now())
+  points    Int      @default(10)
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model RankHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  rank       ArkRank
+  promotedAt DateTime @default(now())
+  
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 model Badge {
