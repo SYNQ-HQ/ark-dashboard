@@ -76,7 +76,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
                 <StreakCounter />
 
-                <div className="flex-1 space-y-2 px-3 overflow-y-auto">
+                <div className="flex-1 space-y-2 px-3 overflow-y-auto scrollbar-hidden">
                     {navItems.map((item) => {
                         const isActive = item.path === "/" ? pathname === "/" : pathname.startsWith(item.path);
                         return (

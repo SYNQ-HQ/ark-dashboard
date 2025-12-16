@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </p>
                     </div>
 
-                    <div className="flex-1 space-y-2 px-3 overflow-y-auto">
+                    <div className="flex-1 space-y-2 px-3 overflow-y-auto scrollbar-hidden">
                         {adminNavItems.map((item) => {
                             const isActive = item.path === "/admin" ? pathname === "/admin" : pathname.startsWith(item.path);
                             return (
