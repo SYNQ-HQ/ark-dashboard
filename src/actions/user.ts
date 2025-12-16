@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { logActivity } from './activity'
 import { ArkRank } from '@prisma/client'
+import { checkRankPromotion } from './ranks'
 
 const IMPACT_STATS = [
     "Today, ARK holders funded 47 acts of kindness.",
@@ -182,29 +183,10 @@ export async function claimDailyCheckIn(walletAddress: string) {
             data: { points: { increment: points } }
         })
 
-        // Check Rank Promotion (Recruit -> Sentinel)
-        let promoted = false;
-        let newRank = user.arkRank;
-
-        if (user.arkRank === 'RECRUIT' && newStreakCount >= 7) {
-            promoted = true;
-            newRank = 'SENTINEL';
-
-            await db.user.update({
-                where: { id: user.id },
-                data: { arkRank: 'SENTINEL' }
-            });
-
-            await db.rankHistory.create({
-                data: {
-                    userId: user.id,
-                    rank: 'SENTINEL',
-                    promotedAt: now
-                }
-            });
-
-            await logActivity(user.id, "RANK_PROMOTION", "Promoted to Sentinel");
-        }
+        // Check Rank Promotion (Centralized Logic)
+        const rankResult = await checkRankPromotion(user.id);
+        const promoted = rankResult.promoted;
+        const newRank = rankResult.newRank;
 
         await logActivity(user.id, "CHECK_IN", `Claimed daily blessing (+${points} pts, streak: ${newStreakCount})`)
 

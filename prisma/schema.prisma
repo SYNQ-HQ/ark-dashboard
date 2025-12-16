@@ -34,6 +34,7 @@ model User {
   
   // ARK Features
   timezone      String?
+  lastRankCheck DateTime?
   arkRank       ArkRank   @default(RECRUIT)
   oathAcceptedAt DateTime?
   oathDurationSeconds Int?
@@ -177,4 +178,18 @@ model ImpactStory {
   supporters Int? @default(0)
   status String? @default("active")
   createdAt DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  multiplier  Float    @default(1.0) // 1.5x, 2.0x etc.
+  status      String   @default("SCHEDULED") // SCHEDULED, ACTIVE, COMPLETED, CANCELLED
+  type        String   @default("BONUS") // BONUS, EVENT, ETC
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AdminGuard from "@/components/AdminGuard";
-import { DashboardIcon, MissionsIcon, RewardsIcon, ProfileIcon, CheckCircleIcon } from "@/components/Icons"; // Reusing existing icons
+import { DashboardIcon, MissionsIcon, RewardsIcon, ProfileIcon, CheckCircleIcon, RanksIcon } from "@/components/Icons";
 import Image from "next/image";
 
 const adminNavItems = [
     { id: "dashboard", label: "Overview", icon: <DashboardIcon />, path: "/admin" },
     { id: "users", label: "Users", icon: <ProfileIcon />, path: "/admin/users" },
+    { id: "ranks", label: "Ranks", icon: <RanksIcon />, path: "/admin/ranks" },
     { id: "missions", label: "Missions", icon: <MissionsIcon />, path: "/admin/missions" },
     { id: "rewards", label: "Rewards", icon: <RewardsIcon />, path: "/admin/rewards" },
     { id: "impact", label: "Impact", icon: <MissionsIcon />, path: "/admin/impact" },

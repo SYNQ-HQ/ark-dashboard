@@ -1,6 +1,7 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Image from "next/image";
 
 export default function LandingPage() {
     return (
@@ -13,13 +14,16 @@ export default function LandingPage() {
 
             <div className="z-10 text-center max-w-2xl px-6 animate-slide-up">
                 <div className="mb-8 flex justify-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/50 rounded-2xl flex items-center justify-center shadow-premium-lg rotate-3 hover:rotate-6 transition-transform duration-500">
-                        <span className="text-4xl font-black text-white">A</span>
+                    {/* <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/50 rounded-2xl flex items-center justify-center shadow-premium-lg rotate-3 hover:rotate-6 transition-transform duration-500"> */}
+                    <div className="w-96 h-40 bg-transparent rounded-2xl flex items-center justify-center rotate-3 hover:rotate-6 transition-transform duration-500">
+                        {/* <span className="text-4xl font-black text-white">A</span> */}
+                        <Image src={"/logo.png"} alt="Ark Logo" width={100} height={100} className="w-full h-full object-contain object-center" />
                     </div>
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent drop-shadow-sm">
-                    ARK <br /> DASHBOARD
+                    {/* ARK <br /> DASHBOARD */}
+                    DASHBOARD
                 </h1>
 
                 <p className="text-xl text-muted-foreground mb-12 leading-relaxed">

@@ -8,6 +8,7 @@ import {
     DashboardIcon,
     MissionsIcon,
     LeaderboardIcon,
+    RanksIcon,
     RewardsIcon,
     ImpactIcon,
     EligibilityIcon,
@@ -24,6 +25,7 @@ const navItems = [
     { id: "dashboard", label: "Dashboard", icon: <DashboardIcon />, path: "/" },
     { id: "missions", label: "Missions", icon: <MissionsIcon />, path: "/missions" },
     { id: "leaderboard", label: "Leaderboard", icon: <LeaderboardIcon />, path: "/leaderboard" },
+    { id: "ranks", label: "Ranks", icon: <RanksIcon />, path: "/ranks" }, // Added Ranks item
     { id: "rewards", label: "Rewards", icon: <RewardsIcon />, path: "/rewards" },
     { id: "impact", label: "Impact", icon: <ImpactIcon />, path: "/impact" },
     { id: "eligibility", label: "Eligibility", icon: <EligibilityIcon />, path: "/eligibility" },

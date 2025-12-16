@@ -66,7 +66,7 @@ export default function OathModal({ isOpen, onClose }: { isOpen: boolean; onClos
                             to give without spectacle,<br />
                             and to respect the dignity of every person I encounter.</p>
 
-                        <p>I understand that kindness is not weakness —<br />
+                        <p>I understand that kindness is not weakness, <br />
                             it is discipline, consistency, and courage.</p>
 
                         <p>I will support what I believe in,<br />
@@ -104,8 +104,8 @@ export default function OathModal({ isOpen, onClose }: { isOpen: boolean; onClos
                         onClick={handleAccept}
                         disabled={!canAccept || submitting}
                         className={`w-full py-4 rounded-lg font-bold text-base transition-all duration-300 ${canAccept
-                                ? "bg-primary text-primary-foreground hover:shadow-lg hover:scale-[1.02]"
-                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                            ? "bg-primary text-primary-foreground hover:shadow-lg hover:scale-[1.02]"
+                            : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                             }`}
                     >
                         {submitting ? "Signing..." : canAccept ? "I ACCEPT THE OATH" : `Read for ${5 - elapsed > 0 ? 5 - elapsed : 0}s`}
