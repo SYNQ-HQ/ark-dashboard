@@ -13,8 +13,7 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "prisma:studio": "prisma studio",
-    "prisma:generate": "prisma generate",
-    "postinstall": "bun run --bun scripts/backfill-balance-history.ts"
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",
