@@ -35,9 +35,6 @@
     "viem": "^2.41.2",
     "wagmi": "^2.19.5"
   },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
   "devDependencies": {
     "@prisma/client": "^5.22.0",
     "@tailwindcss/postcss": "^4",
