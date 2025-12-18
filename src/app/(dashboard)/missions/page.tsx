@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import NextImage from "next/image";
+
+import { useEffect, useState, useCallback } from "react";
 import { CheckCircleIcon } from "@/components/Icons";
 import { useUser } from "@/context/UserContext";
 import Skeleton from "@/components/ui/Skeleton";
@@ -23,20 +25,20 @@ export default function MissionsPage() {
     const [missions, setMissions] = useState<Mission[]>([]);
     const [loading, setLoading] = useState(true);
 
-    async function loadMissions() {
+    const loadMissions = useCallback(async () => {
         if (!user) return;
         setLoading(true);
         const data = await fetchMissions(user.walletAddress);
         setMissions(data as unknown as Mission[]);
         setLoading(false);
-    }
+    }, [user]);
 
     useEffect(() => {
         if (user?.walletAddress) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             loadMissions();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
+    }, [user, loadMissions]);
 
     async function handleComplete(missionId: string) {
         if (!user) return;
@@ -88,11 +90,14 @@ export default function MissionsPage() {
                 {missions.map((mission) => (
                     <div key={mission.id} className="flex flex-col md:flex-row items-start gap-4 py-6 group border-b border-border/50 last:border-0 hover:bg-muted/5 transition-colors pl-2 rounded-lg">
                         {mission.imageUrl && (
-                            <img
-                                src={mission.imageUrl}
-                                alt={mission.title}
-                                className="w-full md:w-24 h-24 object-cover rounded-lg flex-shrink-0 shadow-sm"
-                            />
+                            <div className="relative w-full md:w-24 h-24 flex-shrink-0">
+                                <NextImage
+                                    src={mission.imageUrl}
+                                    alt={mission.title}
+                                    fill
+                                    className="object-cover rounded-lg shadow-sm"
+                                />
+                            </div>
                         )}
                         <div className="flex-1 w-full">
                             <div className="flex justify-between items-start">

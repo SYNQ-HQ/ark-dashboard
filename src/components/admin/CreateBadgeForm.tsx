@@ -104,6 +104,17 @@ export default function CreateBadgeForm() {
             </div>
 
             <div>
+                <label className="block text-sm font-medium mb-1">Display Order</label>
+                <input
+                    type="number"
+                    name="displayOrder"
+                    defaultValue={0}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background"
+                    placeholder="0"
+                />
+            </div>
+
+            <div>
                 <label className="block text-sm font-medium mb-2">Icon Type</label>
                 <div className="flex gap-4 mb-2">
                     <label className="flex items-center gap-2 text-sm cursor-pointer">

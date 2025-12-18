@@ -9,6 +9,7 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import DailyCheckIn from "@/components/dashboard/DailyCheckIn";
 import ImpactStatsCard from "@/components/dashboard/ImpactStatsCard";
+import { getActPortfolio } from "@/actions/token";
 
 interface Mission {
   id: string;
@@ -31,6 +32,15 @@ export default function DashboardPage() {
   const { user, loading: userLoading, refetchUser } = useUser();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [actData, setActData] = useState<{ balance: number; value: number; price: number } | null>(null);
+  const [isBlurred, setIsBlurred] = useState(false);
+
+  // Fetch ACT portfolio data
+  useEffect(() => {
+    if (user?.walletAddress) {
+      getActPortfolio(user.walletAddress).then(setActData);
+    }
+  }, [user?.walletAddress]);
 
   useEffect(() => {
     async function loadData() {
@@ -119,29 +129,82 @@ export default function DashboardPage() {
 
       <ImpactStatsCard />
 
-      <div className="bg-card text-card-foreground border border-card-border rounded-lg p-ark-lg shadow-premium hover-elevate transition-premium flex flex-col justify-between">
-        <div>
-          <div className="flex justify-between items-start mb-2">
-            <h2 className="text-xl font-semibold text-foreground tracking-tight">Holder Reward</h2>
-            {user.actBalance && (
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-mono">
-                {parseFloat(user.actBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} {user.actSymbol || 'ACT'}
-              </span>
+      {/* ACT Holdings Card */}
+      <div className="bg-gradient-to-br from-card via-card to-primary/5 text-card-foreground border border-card-border rounded-lg p-ark-lg shadow-premium hover-elevate transition-premium overflow-hidden relative">
+        {/* Background glow */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        {/* Header with blur toggle */}
+        <div className="flex justify-between items-start mb-4 relative z-10">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground tracking-tight flex items-center gap-2">
+              <span className="material-icons text-primary text-xl">account_balance_wallet</span>
+              $ACT Holdings
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {user.holdingStartedAt
+                ? `Holding for ${Math.floor((Date.now() - new Date(user.holdingStartedAt).getTime()) / (1000 * 60 * 60 * 24))} days`
+                : "Not holding yet"
+              }
+            </p>
+          </div>
+          {/* Blur Toggle */}
+          <button
+            onClick={() => setIsBlurred(!isBlurred)}
+            className="p-2 hover:bg-muted/50 rounded-lg transition-colors group"
+            title={isBlurred ? "Show values" : "Hide values"}
+          >
+            <span className="material-icons text-muted-foreground group-hover:text-primary text-lg">
+              {isBlurred ? "visibility" : "visibility_off"}
+            </span>
+          </button>
+        </div>
+
+        {/* Balance Display */}
+        <div className="space-y-3 relative z-10">
+          {/* ACT Balance */}
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm text-muted-foreground">Balance:</span>
+            <span className={`text-2xl font-bold text-foreground ${isBlurred ? 'blur-sm select-none' : ''} transition-all`}>
+              {actData ? actData.balance.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "..."}
+              <span className="text-sm font-normal text-muted-foreground ml-1">$ACT</span>
+            </span>
+          </div>
+
+          {/* USD Value */}
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm text-muted-foreground">USD Value:</span>
+            <span className={`text-xl font-bold text-green-500 ${isBlurred ? 'blur-sm select-none' : ''} transition-all`}>
+              ${actData ? actData.value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0.00"}
+            </span>
+          </div>
+
+          {/* Eligibility Status */}
+          <div className="mt-4 pt-4 border-t border-border">
+            {actData && actData.value >= 250 ? (
+              <div className="flex items-center gap-2 text-green-500">
+                <span className="material-icons text-sm">check_circle</span>
+                <span className="text-sm font-medium">Eligible ($250+ requirement met)</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-yellow-500">
+                <span className="material-icons text-sm">info</span>
+                <span className="text-sm font-medium">
+                  ${actData ? (250 - actData.value).toFixed(2) : "250"} more to qualify
+                </span>
+              </div>
             )}
           </div>
-          <p className="text-muted-foreground mb-6 text-sm">
-            Hold $250 of $ACT to qualify.
-          </p>
         </div>
-        <div>
-          <div className="w-full bg-muted rounded-full h-3 mb-3 overflow-hidden">
-            <div
-              className={`h-3 rounded-full animate-pulse ${user.isEligible ? "bg-green-500" : "bg-primary"}`}
-              style={{ width: user.isEligible ? "100%" : "60%" }}
-            ></div>
-          </div>
-          <p className="text-sm text-primary font-medium text-right">{user.isEligible ? "Eligible!" : "15 / 25 Days Held"}</p>
-        </div>
+
+        {/* View Details Link */}
+        <Link
+          href="/eligibility"
+          className="mt-4 pt-4 border-t border-border flex items-center justify-between text-sm text-primary hover:text-primary/80 transition-colors relative z-10 group"
+        >
+          <span>View Eligibility Details</span>
+          <span className="material-icons text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </Link>
       </div>
 
       {/* ARK Points Card */}

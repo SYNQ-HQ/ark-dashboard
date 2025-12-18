@@ -4,7 +4,9 @@ import { useState } from "react";
 import { deleteMission } from "@/actions/missions";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
+import NextImage from "next/image";
 import EditMissionModal from "@/components/admin/EditMissionModal";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 
 interface Mission {
     id: string;
@@ -14,6 +16,7 @@ interface Mission {
     points: number;
     frequency: string;
     imageUrl?: string | null;
+    _count?: { userMissions: number };
 }
 
 interface MissionListProps {
@@ -24,21 +27,20 @@ export default function MissionList({ missions: initialMissions }: MissionListPr
     const { user } = useUser();
     const [missions, setMissions] = useState(initialMissions);
     const [editingMission, setEditingMission] = useState<Mission | null>(null);
-    const [deleting, setDeleting] = useState<string | null>(null);
+    const [deletingMission, setDeletingMission] = useState<Mission | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    async function handleDelete(missionId: string, title: string) {
-        if (!user) return;
+    async function confirmDelete() {
+        if (!user || !deletingMission) return;
 
-        const confirmed = confirm(`Are you sure you want to delete "${title}"?`);
-        if (!confirmed) return;
-
-        setDeleting(missionId);
-        const res = await deleteMission(missionId, user.id);
-        setDeleting(null);
+        setIsDeleting(true);
+        const res = await deleteMission(deletingMission.id, user.id);
+        setIsDeleting(false);
 
         if (res.success) {
             toast.success("Mission deleted!");
-            setMissions(missions.filter(m => m.id !== missionId));
+            setMissions(missions.filter(m => m.id !== deletingMission.id));
+            setDeletingMission(null);
         } else {
             toast.error(res.message || "Failed to delete mission");
         }
@@ -50,11 +52,14 @@ export default function MissionList({ missions: initialMissions }: MissionListPr
                 {missions.map((mission) => (
                     <div key={mission.id} className="bg-card border border-border p-4 rounded-xl shadow-sm flex items-start justify-between gap-4">
                         {mission.imageUrl && (
-                            <img
-                                src={mission.imageUrl}
-                                alt={mission.title}
-                                className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                            />
+                            <div className="relative w-20 h-20 flex-shrink-0">
+                                <NextImage
+                                    src={mission.imageUrl}
+                                    alt={mission.title}
+                                    fill
+                                    className="object-cover rounded-lg"
+                                />
+                            </div>
                         )}
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
@@ -81,12 +86,11 @@ export default function MissionList({ missions: initialMissions }: MissionListPr
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(mission.id, mission.title)}
-                                    disabled={deleting === mission.id}
+                                    onClick={() => setDeletingMission(mission)}
                                     className="px-3 py-1 text-xs bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors disabled:opacity-50"
                                     title="Delete mission"
                                 >
-                                    {deleting === mission.id ? 'Deleting...' : 'Delete'}
+                                    Delete
                                 </button>
                             </div>
                         </div>
@@ -104,6 +108,21 @@ export default function MissionList({ missions: initialMissions }: MissionListPr
                     }}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!deletingMission}
+                onClose={() => setDeletingMission(null)}
+                onConfirm={confirmDelete}
+                title="Delete Mission"
+                message={deletingMission ? (
+                    (deletingMission._count?.userMissions || 0) > 0
+                        ? `This mission has ${deletingMission._count?.userMissions} user records. Deleting it will remove these records from history. Are you sure?`
+                        : `Are you sure you want to delete "${deletingMission.title}"?`
+                ) : ""}
+                confirmText="Delete Mission"
+                variant="danger"
+                isLoading={isDeleting}
+            />
         </>
     );
 }

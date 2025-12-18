@@ -5,7 +5,8 @@ import MissionList from "@/components/admin/MissionList";
 async function getMissions() {
     'use server';
     return await db.mission.findMany({
-        orderBy: { points: 'desc' }
+        orderBy: { points: 'desc' },
+        include: { _count: { select: { userMissions: true } } }
     });
 }
 

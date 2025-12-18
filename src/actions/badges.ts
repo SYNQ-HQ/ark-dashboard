@@ -7,7 +7,11 @@ import { logActivity } from './activity'
 export async function fetchBadges() {
     try {
         return await db.badge.findMany({
-            include: { _count: { select: { userBadges: true } } }
+            include: { _count: { select: { userBadges: true } } },
+            orderBy: [
+                { displayOrder: 'asc' },
+                { name: 'asc' }
+            ]
         })
     } catch (error) {
         console.error("Error fetching badges:", error)
@@ -27,13 +31,15 @@ export async function createBadge(formData: FormData) {
 
         const name = formData.get('name') as string
         const description = formData.get('description') as string
-        const icon = formData.get('icon') as string // Emoji or image URL logic
+        const icon = formData.get('icon') as string
+        const displayOrder = parseInt(formData.get('displayOrder') as string) || 0
 
         await db.badge.create({
             data: {
                 name,
                 description,
-                icon
+                icon,
+                displayOrder
             }
         })
 
@@ -62,10 +68,11 @@ export async function updateBadge(formData: FormData) {
         const name = formData.get('name') as string
         const description = formData.get('description') as string
         const icon = formData.get('icon') as string
+        const displayOrder = parseInt(formData.get('displayOrder') as string) || 0
 
         await db.badge.update({
             where: { id: badgeId },
-            data: { name, description, icon }
+            data: { name, description, icon, displayOrder }
         })
 
         await logActivity(admin.id, "ADMIN_BADGE_UPDATE", `Updated badge: ${name}`)
@@ -89,7 +96,11 @@ export async function deleteBadge(badgeId: string, adminId: string) {
         const badge = await db.badge.findUnique({ where: { id: badgeId } })
         if (!badge) return { success: false, message: "Badge not found" }
 
-        await db.badge.delete({ where: { id: badgeId } })
+        // Cleanup user badges first (manual cascade)
+        await db.$transaction([
+            db.userBadge.deleteMany({ where: { badgeId } }),
+            db.badge.delete({ where: { id: badgeId } })
+        ])
 
         await logActivity(admin.id, "ADMIN_BADGE_DELETE", `Deleted badge: ${badge.name}`)
 

@@ -137,7 +137,11 @@ export async function deleteRewardAction(formData: FormData) {
         const reward = await db.reward.findUnique({ where: { id: rewardId } })
         if (!reward) return { success: false, message: "Reward not found" }
 
-        await db.reward.delete({ where: { id: rewardId } })
+        // Cleanup redemptions first
+        await db.$transaction([
+            db.redemption.deleteMany({ where: { rewardId } }),
+            db.reward.delete({ where: { id: rewardId } })
+        ]);
 
         const { logActivity } = await import('./activity')
         await logActivity(admin.id, "ADMIN_REWARD_DELETE", `Deleted reward: ${reward.name}`)

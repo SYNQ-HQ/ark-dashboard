@@ -122,7 +122,7 @@ export default function AdminRanksPage() {
                                                         {u.username || 'Anonymous'}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground font-mono">
-                                                        {u.walletAddress.slice(0, 12)}...
+                                                        {u.walletAddress.slice(0, 6)}...{u.walletAddress.slice(-4)}
                                                     </p>
                                                 </div>
                                             </td>

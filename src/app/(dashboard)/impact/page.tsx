@@ -5,13 +5,7 @@ import { fetchImpactStories } from "@/actions/impact";
 import Image from "next/image";
 import Link from "next/link";
 
-interface ImpactStory {
-    id: string;
-    title: string;
-    description: string;
-    imageUrl: string | null;
-    slug?: string;
-}
+import { ImpactStory } from "@prisma/client";
 
 export default function ImpactPage() {
     const [stories, setStories] = useState<ImpactStory[]>([]);
@@ -21,7 +15,7 @@ export default function ImpactPage() {
         async function load() {
             try {
                 const data = await fetchImpactStories();
-                setStories(data);
+                setStories(data as ImpactStory[]);
             } catch (e) {
                 console.error(e);
             } finally {

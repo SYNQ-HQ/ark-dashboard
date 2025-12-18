@@ -30,6 +30,8 @@ model User {
   isBanned      Boolean   @default(false)
   lastUsernameChange DateTime?
   holdingStartedAt DateTime? // Tracks when user first met the $250 holding requirement
+  lastBalanceCheck DateTime? // Last time we checked their balance
+  balanceHistory BalanceSnapshot[] // Historical balance snapshots
   activities    UserActivity[]
   
   // ARK Features
@@ -55,12 +57,26 @@ model UserActivity {
 
 enum ArkRank {
   RECRUIT
-  SENTINEL
-  OPERATIVE
+  SOLDIER
+  ELITE
+  COMMANDER
+  LEGEND
   VANGUARD
   CAPTAIN
-  COMMANDER
   HIGH_GUARDIAN
+}
+
+model BalanceSnapshot {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance     Float    // ACT token balance
+  balanceUsd  Float    // USD value at time of snapshot
+  checkedAt   DateTime @default(now())
+  source      String   @default("MANUAL") // "MANUAL", "CRON", "AUTO"
+  
+  @@index([userId, checkedAt])
+  @@index([checkedAt]) // For cleanup queries
 }
 
 enum Role {
@@ -149,6 +165,7 @@ model Badge {
   name        String
   description String?
   icon        String // Emoji or URL
+  displayOrder Int     @default(0)
   
   userBadges  UserBadge[]
 }

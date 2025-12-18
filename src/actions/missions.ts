@@ -200,7 +200,11 @@ export async function deleteMission(missionId: string, adminId: string) {
         const mission = await db.mission.findUnique({ where: { id: missionId } })
         if (!mission) return { success: false, message: "Mission not found" }
 
-        await db.mission.delete({ where: { id: missionId } })
+        // Cleanup user missions first
+        await db.$transaction([
+            db.userMission.deleteMany({ where: { missionId } }),
+            db.mission.delete({ where: { id: missionId } })
+        ])
 
         await logActivity(admin.id, "ADMIN_MISSION_DELETE", `Deleted mission: ${mission.title}`)
 

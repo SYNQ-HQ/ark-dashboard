@@ -2,11 +2,12 @@
 
 import CreateRewardForm from "@/components/admin/CreateRewardForm";
 import EditRewardModal from "@/components/admin/EditRewardModal";
-import { fetchRewards, deleteRewardAction } from "@/actions/rewards"; // You'll need to export fetchRewards in actions if not already
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
+import { fetchRewards, deleteRewardAction } from "@/actions/rewards";
 import { useUser } from "@/context/UserContext";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { db } from "@/lib/db"; // Can't import db in client comp. Need to use server action.
+import NextImage from "next/image";
 
 interface Reward {
     id: string;
@@ -25,30 +26,34 @@ export default function AdminRewardsPage() {
     const [rewards, setRewards] = useState<Reward[]>([]);
     const [editingReward, setEditingReward] = useState<Reward | null>(null);
 
+    // Deletion state
+    const [deletingReward, setDeletingReward] = useState<Reward | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const loadRewards = async () => {
+        const data = await fetchRewards();
+        setRewards(data as unknown as Reward[]);
+    };
+
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadRewards();
     }, []);
 
-    const loadRewards = async () => {
-        // We need to make sure fetchRewards is importable and usable
-        // It was defined as 'use server' inside a function in the old file.
-        // I need to check headers of existing actions/rewards.ts
-        // It exports fetchRewards as a top level function, so I can import it.
-        const data = await fetchRewards();
-        // The type returned might not exactly match (dates, etc), but for now standard json
-        setRewards(data as any);
-    };
+    const confirmDelete = async () => {
+        if (!user || !deletingReward) return;
 
-    const handleDelete = async (rewardId: string) => {
-        if (!user || !confirm("Are you sure you want to delete this reward?")) return;
-
+        setIsDeleting(true);
         const formData = new FormData();
-        formData.append("rewardId", rewardId);
+        formData.append("rewardId", deletingReward.id);
         formData.append("adminId", user.id);
 
         const res = await deleteRewardAction(formData);
+        setIsDeleting(false);
+
         if (res.success) {
             toast.success("Reward deleted");
+            setDeletingReward(null);
             loadRewards();
         } else {
             toast.error(res.message);
@@ -75,7 +80,7 @@ export default function AdminRewardsPage() {
                                     <span className="material-icons text-sm">edit</span>
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(reward.id)}
+                                    onClick={() => setDeletingReward(reward)}
                                     className="p-1.5 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md shadow-sm transition-colors text-red-600"
                                 >
                                     <span className="material-icons text-sm">delete</span>
@@ -83,8 +88,13 @@ export default function AdminRewardsPage() {
                             </div>
 
                             {reward.imageUrl ? (
-                                <div className="h-32 w-full overflow-hidden bg-muted">
-                                    <img src={reward.imageUrl} alt={reward.name} className="w-full h-full object-cover" />
+                                <div className="h-32 w-full overflow-hidden bg-muted relative">
+                                    <NextImage
+                                        src={reward.imageUrl}
+                                        alt={reward.name}
+                                        fill
+                                        className="object-cover transition-transform group-hover:scale-105"
+                                    />
                                 </div>
                             ) : (
                                 <div className="bg-muted h-32 flex items-center justify-center">
@@ -105,9 +115,6 @@ export default function AdminRewardsPage() {
 
                                 <div className="mt-auto border-t border-border pt-4 flex items-center justify-between">
                                     <span className="text-xs text-muted-foreground">
-                                        {/* _count might be missing if we don't include it in fetchRewards. 
-                                            I need to check actions/rewards.ts for include statement. 
-                                            If not, I'll update it. */}
                                         {reward._count?.redemptions || 0} redeemed
                                     </span>
                                 </div>
@@ -130,6 +137,21 @@ export default function AdminRewardsPage() {
                     onUpdate={loadRewards}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!deletingReward}
+                onClose={() => setDeletingReward(null)}
+                onConfirm={confirmDelete}
+                title="Delete Reward"
+                message={deletingReward ? (
+                    (deletingReward._count?.redemptions || 0) > 0
+                        ? `This reward has been redeemed ${deletingReward._count?.redemptions} times. Deleting it will remove these records from history. Are you sure?`
+                        : "Are you sure you want to delete this reward?"
+                ) : ""}
+                confirmText="Delete Reward"
+                variant="danger"
+                isLoading={isDeleting}
+            />
         </div>
     );
 }

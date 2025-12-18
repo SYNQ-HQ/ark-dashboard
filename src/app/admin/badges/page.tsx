@@ -4,27 +4,64 @@ import { fetchBadges, deleteBadgeAction } from "@/actions/badges";
 import CreateBadgeForm from "@/components/admin/CreateBadgeForm";
 import EditBadgeModal from "@/components/admin/EditBadgeModal";
 import AwardBadgeModal from "@/components/admin/AwardBadgeModal";
+import ConfirmationModal from "@/components/admin/ConfirmationModal";
 import { useUser } from "@/context/UserContext";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import NextImage from "next/image";
+
+interface Badge {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    displayOrder: number;
+    _count?: { userBadges: number };
+}
 
 export default function AdminBadgesPage() {
     const { user } = useUser();
-    const [badges, setBadges] = useState<any[]>([]);
-    const [editingBadge, setEditingBadge] = useState<any>(null);
-    const [awardingBadge, setAwardingBadge] = useState<any>(null);
+    const [badges, setBadges] = useState<Badge[]>([]);
+    const [editingBadge, setEditingBadge] = useState<Badge | null>(null);
+    const [awardingBadge, setAwardingBadge] = useState<Badge | null>(null);
 
-    // Initial fetch
-    useEffect(() => {
-        loadBadges();
-    }, []);
+    // Deletion state
+    const [deletingBadge, setDeletingBadge] = useState<Badge | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     async function loadBadges() {
         const data = await fetchBadges();
-        setBadges(data);
+        setBadges(data as unknown as Badge[]);
     }
+
+    // Initial fetch
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadBadges();
+    }, []);
 
     // Helper to check if icon is URL
     const isUrl = (str: string) => str.startsWith('http');
+
+    const confirmDelete = async () => {
+        if (!user || !deletingBadge) return;
+
+        setIsDeleting(true);
+        const formData = new FormData();
+        formData.append("badgeId", deletingBadge.id);
+        formData.append("adminId", user.id);
+
+        const res = await deleteBadgeAction(formData);
+        setIsDeleting(false);
+
+        if (res.success) {
+            toast.success("Badge deleted");
+            setDeletingBadge(null);
+            loadBadges(); // Refresh list
+        } else {
+            toast.error(res.message);
+        }
+    };
 
     return (
         <div className="animate-fade-in">
@@ -39,9 +76,9 @@ export default function AdminBadgesPage() {
                         <div key={badge.id} className="bg-card border border-border rounded-xl p-5 shadow-sm flex flex-col gap-3">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-full text-2xl overflow-hidden">
+                                    <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-full text-2xl overflow-hidden relative">
                                         {isUrl(badge.icon) ? (
-                                            <img src={badge.icon} alt={badge.name} className="w-full h-full object-cover" />
+                                            <NextImage src={badge.icon} alt={badge.name} fill className="object-cover" />
                                         ) : (
                                             <span>{badge.icon}</span>
                                         )}
@@ -72,16 +109,12 @@ export default function AdminBadgesPage() {
                                         Edit
                                     </button>
                                     {user && (
-                                        <form action={async (formData) => {
-                                            const res = await deleteBadgeAction(formData);
-                                            if (res.success) loadBadges();
-                                        }}>
-                                            <input type="hidden" name="badgeId" value={badge.id} />
-                                            <input type="hidden" name="adminId" value={user.id} />
-                                            <button type="submit" className="text-xs bg-red-100 text-red-700 px-2 py-1.5 rounded hover:bg-red-200 font-medium transition-colors">
-                                                Delete
-                                            </button>
-                                        </form>
+                                        <button
+                                            onClick={() => setDeletingBadge(badge)}
+                                            className="text-xs bg-red-100 text-red-700 px-2 py-1.5 rounded hover:bg-red-200 font-medium transition-colors"
+                                        >
+                                            Delete
+                                        </button>
                                     )}
                                 </div>
                             </div>
@@ -115,6 +148,21 @@ export default function AdminBadgesPage() {
                     }}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!deletingBadge}
+                onClose={() => setDeletingBadge(null)}
+                onConfirm={confirmDelete}
+                title="Delete Badge"
+                message={deletingBadge ? (
+                    (deletingBadge._count?.userBadges || 0) > 0
+                        ? `This badge has been awarded to ${deletingBadge._count?.userBadges} users. Deleting it will remove it from their profiles. Are you sure?`
+                        : "Are you sure you want to delete this badge?"
+                ) : ""}
+                confirmText="Delete Badge"
+                variant="danger"
+                isLoading={isDeleting}
+            />
         </div>
     );
 }

@@ -141,6 +141,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </div>
                     </div>
                     <div className="flex items-center space-x-3 lg:space-x-6">
+                        {user?.role === 'ADMIN' && (
+                            <Link
+                                href="/admin"
+                                className="hidden md:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-primary/5"
+                            >
+                                <span className="material-icons text-lg">admin_panel_settings</span>
+                                Admin
+                            </Link>
+                        )}
                         {user && (
                             <div className="bg-muted/50 rounded-full px-3 lg:px-4 py-2 flex items-center gap-2 border border-border">
                                 <span className="text-xs lg:text-sm font-medium">{user.points.toLocaleString()} PTS</span>
