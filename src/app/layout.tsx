@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
 
 const inter = Inter({
@@ -38,6 +39,7 @@ export default function RootLayout({
             </AuthGuard>
             <Toaster position="bottom-right" theme="dark" richColors />
           </UserProvider>
+          <SpeedInsights />
         </Web3Provider>
       </body>
     </html>
