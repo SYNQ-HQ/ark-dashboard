@@ -58,12 +58,11 @@ model UserActivity {
 
 enum ArkRank {
   RECRUIT
-  SOLDIER
-  ELITE
+  SENTINEL
+  OPERATIVE
   VANGUARD
   CAPTAIN
   COMMANDER
-  LEGEND
   HIGH_GUARDIAN
 }
 

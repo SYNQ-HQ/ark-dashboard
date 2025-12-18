@@ -8,13 +8,12 @@ import { toast } from "sonner";
 
 const ALL_RANKS: ArkRank[] = [
     'RECRUIT',
-    'SOLDIER',
-    'ELITE',
+    'SENTINEL',
+    'OPERATIVE',
     'VANGUARD',
     'CAPTAIN',
     'COMMANDER',
-    'LEGEND',
-    'HIGH_GUARDIAN',
+    'HIGH_GUARDIAN'
 ];
 
 interface AssignRankModalProps {

@@ -8,13 +8,12 @@ import { ArkRank } from '@prisma/client'
 // Rank Order for comparison
 const RANK_ORDER: Record<string, number> = {
     RECRUIT: 0,
-    SOLDIER: 1,
-    ELITE: 2,
+    SENTINEL: 1,
+    OPERATIVE: 2,
     VANGUARD: 3,
     CAPTAIN: 4,
     COMMANDER: 5,
-    LEGEND: 6,
-    HIGH_GUARDIAN: 7
+    HIGH_GUARDIAN: 6
 };
 
 // Check if user qualifies for a rank promotion
@@ -31,16 +30,16 @@ export async function checkRankPromotion(userId: string) {
         let newRank: ArkRank | null = null;
         let promotionMsg = "";
 
-        // 1. RECRUIT -> SOLDIER
+        // 1. RECRUIT -> SENTINEL
         // Criteria: 7-day streak
         if (currentRankValue < 1) {
             if ((user.streak?.currentStreak || 0) >= 7) {
-                newRank = 'SOLDIER';
-                promotionMsg = "Promoted to Soldier: 7-day streak achieved.";
+                newRank = 'SENTINEL';
+                promotionMsg = "Promoted to Sentinel: 7-day streak achieved.";
             }
         }
 
-        // 2. SOLDIER -> ELITE
+        // 2. SENTINEL -> OPERATIVE
         // Criteria: 5+ missions completed
         if (currentRankValue < 2) {
             const missionCount = await db.userMission.count({
@@ -48,14 +47,13 @@ export async function checkRankPromotion(userId: string) {
             });
 
             if (missionCount >= 5) {
-                newRank = 'ELITE';
-                promotionMsg = "Promoted to Elite: 5+ missions completed.";
+                newRank = 'OPERATIVE';
+                promotionMsg = "Promoted to Operative: 5+ missions completed.";
             }
         }
 
-        // 3. ELITE -> VANGUARD
+        // 3. OPERATIVE -> VANGUARD
         // Criteria: Hold $250+ for 25 days.
-        // Implementation check: holdingStartedAt is set, and diff > 25 days.
         if (currentRankValue < 3) {
             if (user.holdingStartedAt) {
                 const now = new Date();
@@ -82,15 +80,13 @@ export async function checkRankPromotion(userId: string) {
         // Criteria: Top 10% globally AND 30+ day streak
         if (currentRankValue < 5) {
             if ((user.streak?.currentStreak || 0) >= 30) {
-                // Check percentile
                 const totalUsers = await db.user.count();
                 const usersWithMorePoints = await db.user.count({
                     where: { points: { gt: user.points } }
                 });
 
-                const percentile = (usersWithMorePoints / totalUsers) * 100; // e.g. 5% means top 5%
+                const percentile = (usersWithMorePoints / totalUsers) * 100;
 
-                // Top 10% means percentile <= 10
                 if (percentile <= 10) {
                     newRank = 'COMMANDER';
                     promotionMsg = "Promoted to Commander: Top 10% global rank and 30-day streak.";
@@ -98,7 +94,7 @@ export async function checkRankPromotion(userId: string) {
             }
         }
 
-        // 6. COMMANDER -> LEGEND
+        // 6. COMMANDER -> HIGH_GUARDIAN
         // Criteria: Top 5% globally OR 50-day streak
         if (currentRankValue < 6) {
             let qualified = false;
@@ -117,31 +113,13 @@ export async function checkRankPromotion(userId: string) {
             }
 
             if (qualified) {
-                newRank = 'LEGEND';
-                promotionMsg = "Promoted to Legend: A legacy established.";
-            }
-        }
-
-        // 7. LEGEND -> HIGH_GUARDIAN
-        // Criteria: Ultimate achievement - Top 1% AND 100-day streak
-        if (currentRankValue < 7) {
-            if ((user.streak?.currentStreak || 0) >= 100) {
-                const totalUsers = await db.user.count();
-                const usersWithMorePoints = await db.user.count({
-                    where: { points: { gt: user.points } }
-                });
-                const percentile = (usersWithMorePoints / totalUsers) * 100;
-
-                if (percentile <= 1) {
-                    newRank = 'HIGH_GUARDIAN';
-                    promotionMsg = "Promoted to High Guardian: The pinnacle achieved.";
-                }
+                newRank = 'HIGH_GUARDIAN';
+                promotionMsg = "Promoted to High Guardian: A legacy established.";
             }
         }
 
         // Apply Promotion if found
         if (newRank) {
-            // Double check we are not demoting (shouldn't happen with currentRankValue < X check, but safe guard)
             if (RANK_ORDER[newRank] > currentRankValue) {
                 const now = new Date();
 

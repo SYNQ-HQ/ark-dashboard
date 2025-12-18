@@ -6,40 +6,35 @@ export const RANK_INFO: Record<ArkRank, { label: string; color: string; descript
         color: "text-green-500",
         description: "The journey begins."
     },
-    SOLDIER: {
-        label: "Soldier",
+    SENTINEL: {
+        label: "Sentinel",
         color: "text-blue-500",
         description: "Consistency is your weapon."
     },
-    ELITE: {
-        label: "Elite",
+    OPERATIVE: {
+        label: "Operative",
         color: "text-yellow-500",
-        description: "Actions speak louder."
+        description: "Action defines you."
     },
     VANGUARD: {
         label: "Vanguard",
         color: "text-purple-500",
-        description: "Holding the line."
+        description: "Commitment is proven."
     },
     CAPTAIN: {
         label: "Captain",
-        color: "text-cyan-500",
+        color: "text-indigo-500",
         description: "Leading by example."
     },
     COMMANDER: {
         label: "Commander",
         color: "text-red-500",
-        description: "Strategic excellence."
-    },
-    LEGEND: {
-        label: "Legend",
-        color: "text-amber-500",
-        description: "Inspiring movements."
+        description: "Influence through service."
     },
     HIGH_GUARDIAN: {
         label: "High Guardian",
         color: "text-orange-500",
-        description: "Protecting the mission."
+        description: "A legacy established."
     }
 };
 
