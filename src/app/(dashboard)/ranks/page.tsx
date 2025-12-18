@@ -7,14 +7,25 @@ import { useState } from "react";
 
 const ALL_RANKS: ArkRank[] = [
   "RECRUIT",
-  "SENTINEL",
-  "OPERATIVE",
+  "SOLDIER",
+  "ELITE",
   "VANGUARD",
   "CAPTAIN",
   "COMMANDER",
-  "HIGH_GUARDIAN",
+  "LEGEND",
+  "HIGH_GUARDIAN"
 ];
 
+const RANK_NAMES: Record<ArkRank, string> = {
+  "RECRUIT": "Recruit",
+  "SOLDIER": "Soldier",
+  "ELITE": "Elite",
+  "VANGUARD": "Vanguard",
+  "CAPTAIN": "Captain",
+  "COMMANDER": "Commander",
+  "LEGEND": "Legend",
+  "HIGH_GUARDIAN": "High Guardian"
+};
 const RANK_META: Record<
   ArkRank,
   {
@@ -34,17 +45,17 @@ const RANK_META: Record<
     color: "text-green-500",
     icon: "person_add",
   },
-  SENTINEL: {
-    tag: "Sentinel",
-    headline: "Sentinels stand watch.",
+  SOLDIER: {
+    tag: "Soldier",
+    headline: "Soldiers stand watch.",
     body: "They don't rush. They don't leave.",
     attain: ["Maintain a 7-day active streak"],
     color: "text-blue-500",
     icon: "shield",
   },
-  OPERATIVE: {
-    tag: "Operative",
-    headline: "Operatives don't talk impact — they execute it.",
+  ELITE: {
+    tag: "Elite",
+    headline: "Elite operatives don't talk impact — they execute it.",
     body: "Deeds over words.",
     attain: [
       "Complete 5 missions",
@@ -83,13 +94,24 @@ const RANK_META: Record<
     color: "text-red-500",
     icon: "military_tech",
   },
+  LEGEND: {
+    tag: "Legend",
+    headline: "Legends don't chase fame — they inspire movements.",
+    body: "Their impact echoes beyond their presence.",
+    attain: [
+      "Reach top 5% of contributors globally",
+      "OR complete 50 consecutive daily check-ins",
+    ],
+    color: "text-amber-500",
+    icon: "emoji_events",
+  },
   HIGH_GUARDIAN: {
     tag: "High Guardian",
     headline: "High Guardians protect the mission itself.",
     body: "They are rare. They are remembered.",
     attain: [
-      "Reach top 5% of contributors globally",
-      "OR complete 50 consecutive daily check-ins",
+      "Reach top 1% of contributors globally",
+      "AND complete 100 consecutive daily check-ins",
     ],
     color: "text-orange-500",
     icon: "verified_user",

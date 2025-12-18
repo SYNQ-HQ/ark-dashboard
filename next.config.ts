@@ -17,9 +17,12 @@ const nextConfig: NextConfigWithTurbo = {
     };
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ['pino', 'pino-pretty', 'thread-stream']
-  },
+  // experimental: {
+  //   serverComponentsExternalPackages: ['pino', 'pino-pretty', 'thread-stream']
+  // },
+
+  serverExternalPackages: ['pino', 'pino-pretty', 'thread-stream'],
+
   images: {
     remotePatterns: [
       {

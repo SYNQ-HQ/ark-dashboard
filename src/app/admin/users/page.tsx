@@ -2,6 +2,7 @@
 
 import { fetchUsers, updateUserRole, toggleUserBanAction } from "@/actions/user";
 import { useUser } from "@/context/UserContext";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -79,7 +80,7 @@ export default function AdminUsersPage() {
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                                                 {u.profileImageUrl ? (
-                                                    <img src={u.profileImageUrl} alt={u.username} className="w-full h-full object-cover" />
+                                                    <Image src={u.profileImageUrl} alt={u.username} width={200} height={200} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <span className="font-bold text-primary">{u.username[0].toUpperCase()}</span>
                                                 )}
@@ -133,8 +134,8 @@ export default function AdminUsersPage() {
                                                     <button
                                                         type="submit"
                                                         className={`text-xs px-3 py-1.5 rounded font-medium transition-colors border ${u.isBanned
-                                                                ? 'bg-background border-border text-foreground hover:bg-muted'
-                                                                : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
+                                                            ? 'bg-background border-border text-foreground hover:bg-muted'
+                                                            : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
                                                             }`}
                                                     >
                                                         {u.isBanned ? 'Unban' : 'Ban'}

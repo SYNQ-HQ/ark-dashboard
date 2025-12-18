@@ -55,14 +55,15 @@ model UserActivity {
   user User @relation(fields: [userId], references: [id])
 }
 
+
 enum ArkRank {
   RECRUIT
   SOLDIER
   ELITE
-  COMMANDER
-  LEGEND
   VANGUARD
   CAPTAIN
+  COMMANDER
+  LEGEND
   HIGH_GUARDIAN
 }
 

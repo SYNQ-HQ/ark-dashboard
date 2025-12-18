@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 // So I will convert this to client and fetch data via server action.
 
 import { fetchImpactStories } from "@/actions/impact";
+import Image from "next/image";
 
 export default function AdminImpactPage() {
     const { user } = useUser();
@@ -49,7 +50,7 @@ export default function AdminImpactPage() {
                         <div key={story.id} className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col md:flex-row">
                             <div className="bg-muted w-full md:w-48 h-32 md:h-auto flex-shrink-0 relative">
                                 {story.imageUrl ? (
-                                    <img src={story.imageUrl} alt={story.title} className="w-full h-full object-cover" />
+                                    <Image src={story.imageUrl} width={200} height={200} alt={story.title} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                         <span className="material-icons text-3xl">image</span>

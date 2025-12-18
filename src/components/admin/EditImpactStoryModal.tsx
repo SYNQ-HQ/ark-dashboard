@@ -5,6 +5,7 @@ import { getUploadSignature } from "@/actions/upload";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 import { useState } from "react";
+import Image from "next/image";
 
 interface ImpactStory {
     id: string;
@@ -184,7 +185,7 @@ export default function EditImpactStoryModal({ story, onClose }: EditImpactStory
                         <label className="block text-sm font-medium mb-1">Image</label>
                         {story.imageUrl && (
                             <div className="mb-2">
-                                <img src={story.imageUrl} alt="Current" className="w-full h-32 object-cover rounded-lg" />
+                                <Image src={story.imageUrl} alt="Current" width={200} height={200} className="w-full h-32 object-cover rounded-lg" />
                                 <label className="flex items-center gap-2 mt-2 text-sm">
                                     <input
                                         type="checkbox"

@@ -8,12 +8,13 @@ import { toast } from "sonner";
 
 const ALL_RANKS: ArkRank[] = [
     'RECRUIT',
-    'SENTINEL',
-    'OPERATIVE',
+    'SOLDIER',
+    'ELITE',
     'VANGUARD',
     'CAPTAIN',
     'COMMANDER',
-    'HIGH_GUARDIAN'
+    'LEGEND',
+    'HIGH_GUARDIAN',
 ];
 
 interface AssignRankModalProps {
@@ -90,10 +91,10 @@ export default function AssignRankModal({
                                     key={rank}
                                     onClick={() => setSelectedRank(rank)}
                                     className={`w-full text-left p-3 rounded-xl border transition-premium ${isSelected
-                                            ? 'border-primary bg-primary/10'
-                                            : isCurrent
-                                                ? 'border-border bg-muted/50 opacity-60'
-                                                : 'border-border hover-elevate'
+                                        ? 'border-primary bg-primary/10'
+                                        : isCurrent
+                                            ? 'border-border bg-muted/50 opacity-60'
+                                            : 'border-border hover-elevate'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">

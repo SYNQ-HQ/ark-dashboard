@@ -8,12 +8,13 @@ import { ArkRank } from '@prisma/client'
 // Rank Order for comparison
 const RANK_ORDER: Record<string, number> = {
     RECRUIT: 0,
-    SENTINEL: 1,
-    OPERATIVE: 2,
+    SOLDIER: 1,
+    ELITE: 2,
     VANGUARD: 3,
     CAPTAIN: 4,
     COMMANDER: 5,
-    HIGH_GUARDIAN: 6
+    LEGEND: 6,
+    HIGH_GUARDIAN: 7
 };
 
 // Check if user qualifies for a rank promotion
@@ -30,31 +31,29 @@ export async function checkRankPromotion(userId: string) {
         let newRank: ArkRank | null = null;
         let promotionMsg = "";
 
-        // 1. RECRUIT -> SENTINEL
+        // 1. RECRUIT -> SOLDIER
         // Criteria: 7-day streak
         if (currentRankValue < 1) {
             if ((user.streak?.currentStreak || 0) >= 7) {
-                newRank = 'SENTINEL';
-                promotionMsg = "Promoted to Sentinel: 7-day streak achieved.";
+                newRank = 'SOLDIER';
+                promotionMsg = "Promoted to Soldier: 7-day streak achieved.";
             }
         }
 
-        // 2. SENTINEL -> OPERATIVE
-        // Criteria: 5+ verified acts (using acts count as proxy or activities) OR 1 verified act (simplified: 5 missions or checkins?)
-        // Spec says: "Sends $ACT 5+ times OR completes 1 verified act of kindness"
-        // Implementation: We'll use > 5 completed missions as proxy for "Action"
+        // 2. SOLDIER -> ELITE
+        // Criteria: 5+ missions completed
         if (currentRankValue < 2) {
             const missionCount = await db.userMission.count({
                 where: { userId, status: 'COMPLETED' }
             });
 
             if (missionCount >= 5) {
-                newRank = 'OPERATIVE';
-                promotionMsg = "Promoted to Operative: 5+ missions completed.";
+                newRank = 'ELITE';
+                promotionMsg = "Promoted to Elite: 5+ missions completed.";
             }
         }
 
-        // 3. OPERATIVE -> VANGUARD
+        // 3. ELITE -> VANGUARD
         // Criteria: Hold $250+ for 25 days.
         // Implementation check: holdingStartedAt is set, and diff > 25 days.
         if (currentRankValue < 3) {
@@ -99,8 +98,8 @@ export async function checkRankPromotion(userId: string) {
             }
         }
 
-        // 6. COMMANDER -> HIGH GUARDIAN
-        // Criteria: Top 5% globally OR 50-day streak OR 3 funded ARKs
+        // 6. COMMANDER -> LEGEND
+        // Criteria: Top 5% globally OR 50-day streak
         if (currentRankValue < 6) {
             let qualified = false;
 
@@ -118,8 +117,25 @@ export async function checkRankPromotion(userId: string) {
             }
 
             if (qualified) {
-                newRank = 'HIGH_GUARDIAN';
-                promotionMsg = "Promoted to High Guardian: A legacy established.";
+                newRank = 'LEGEND';
+                promotionMsg = "Promoted to Legend: A legacy established.";
+            }
+        }
+
+        // 7. LEGEND -> HIGH_GUARDIAN
+        // Criteria: Ultimate achievement - Top 1% AND 100-day streak
+        if (currentRankValue < 7) {
+            if ((user.streak?.currentStreak || 0) >= 100) {
+                const totalUsers = await db.user.count();
+                const usersWithMorePoints = await db.user.count({
+                    where: { points: { gt: user.points } }
+                });
+                const percentile = (usersWithMorePoints / totalUsers) * 100;
+
+                if (percentile <= 1) {
+                    newRank = 'HIGH_GUARDIAN';
+                    promotionMsg = "Promoted to High Guardian: The pinnacle achieved.";
+                }
             }
         }
 
