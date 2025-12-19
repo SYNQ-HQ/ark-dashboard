@@ -44,12 +44,9 @@ const RANK_META: Record<
   },
   OPERATIVE: {
     tag: "Operative",
-    headline: "Operatives don't talk impact — they execute it.",
+    headline: "Operatives don't talk impact - they execute it.",
     body: "Deeds over words.",
-    attain: [
-      "Complete 5 missions",
-      "Demonstrate consistent action",
-    ],
+    attain: ["Complete 5 missions", "Demonstrate consistent action"],
     color: "text-yellow-500",
     icon: "bolt",
   },
@@ -74,7 +71,7 @@ const RANK_META: Record<
   },
   COMMANDER: {
     tag: "Commander",
-    headline: "Commanders don't demand loyalty — they earn it.",
+    headline: "Commanders don't demand loyalty - they earn it.",
     body: "Their presence changes outcomes.",
     attain: [
       "Rank in top 10% of contributors",
@@ -168,7 +165,9 @@ export default function RanksPage() {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`material-icons text-xl ${RANK_META[currentRank].color}`}>
+              <span
+                className={`material-icons text-xl ${RANK_META[currentRank].color}`}
+              >
                 {RANK_META[currentRank].icon}
               </span>
             </div>
@@ -206,15 +205,17 @@ export default function RanksPage() {
             <button
               key={rank}
               onClick={() => setOpenSheet(rank)}
-              className={`w-full rounded-xl p-ark-lg text-left transition-premium hover-elevate ${isCurrent
-                ? "bg-card border border-primary shadow-premium"
-                : "bg-card border border-border"
-                }`}
+              className={`w-full rounded-xl p-ark-lg text-left transition-premium hover-elevate ${
+                isCurrent
+                  ? "bg-card border border-primary shadow-premium"
+                  : "bg-card border border-border"
+              }`}
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-full ${meta.color
-                    } bg-muted ${isUnlocked ? "" : "opacity-40"}`}
+                  className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                    meta.color
+                  } bg-muted ${isUnlocked ? "" : "opacity-40"}`}
                 >
                   <span className="material-icons text-2xl">
                     {isUnlocked ? meta.icon : "lock"}
@@ -231,10 +232,11 @@ export default function RanksPage() {
                 </div>
 
                 <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full ${isCurrent
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                    }`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                    isCurrent
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
                 >
                   <span className="material-icons text-sm">
                     {isCurrent ? "location_on" : "chevron_right"}
