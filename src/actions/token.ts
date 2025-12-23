@@ -21,25 +21,61 @@ let priceCache: { price: number; timestamp: number } | null = null
 const CACHE_TTL = 60 * 1000 // 60 seconds
 
 /**
- * Fetch ACT price from PancakeSwap API (fastest for BSC)
+ * Fetch ACT price from DexScreener (Primary source)
+ * Aggregates liquidity from all AMMs including PancakeSwap
  */
-async function getPriceFromPancakeSwap(): Promise<number | null> {
+async function getPriceFromDexScreener(): Promise<number | null> {
     try {
         const response = await fetch(
-            `https://api.pancakeswap.info/api/v2/tokens/${ACT_CONTRACT_ADDRESS}`,
-            { next: { revalidate: 60 }, signal: AbortSignal.timeout(3000) }
+            `https://api.dexscreener.com/latest/dex/tokens/${ACT_CONTRACT_ADDRESS}`,
+            { next: { revalidate: 30 }, signal: AbortSignal.timeout(5000) }
         )
         if (!response.ok) return null
         const data = await response.json()
-        return data?.data?.price ? parseFloat(data.data.price) : null
+        const pairs = data.pairs || []
+
+        // Filter for BSC pairs and sort by liquidity (USD) descending
+        // This ensures we get the price from the most liquid pool (like the UI does)
+        const bscPairs = pairs
+            .filter((p: any) => p.chainId === 'bsc')
+            .sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+
+        const bestPair = bscPairs[0];
+
+        if (bestPair) {
+            console.log(`[Price] DexScreener selected pair: ${bestPair.pairAddress} | Liq: $${bestPair.liquidity?.usd} | Price: $${bestPair.priceUsd}`);
+            return parseFloat(bestPair.priceUsd);
+        }
+
+        return null
     } catch (error) {
-        console.warn('[Price] PancakeSwap failed:', error)
+        console.warn('[Price] DexScreener failed:', error)
         return null
     }
 }
 
 /**
- * Fetch ACT price from CoinGecko API (reliable, good caching)
+ * Fetch ACT price from GeckoTerminal (Fallback 1)
+ * Reliable for on-chain prices
+ */
+async function getPriceFromGeckoTerminal(): Promise<number | null> {
+    try {
+        const response = await fetch(
+            `https://api.geckoterminal.com/api/v2/networks/bsc/tokens/${ACT_CONTRACT_ADDRESS}`,
+            { next: { revalidate: 60 }, signal: AbortSignal.timeout(5000) }
+        )
+        if (!response.ok) return null
+        const data = await response.json()
+        const price = data?.data?.attributes?.price_usd
+        return price ? parseFloat(price) : null
+    } catch (error) {
+        console.warn('[Price] GeckoTerminal failed:', error)
+        return null
+    }
+}
+
+/**
+ * Fetch ACT price from CoinGecko API (Fallback 2)
  */
 async function getPriceFromCoinGecko(): Promise<number | null> {
     try {
@@ -59,49 +95,33 @@ async function getPriceFromCoinGecko(): Promise<number | null> {
 }
 
 /**
- * Fetch ACT price from DexScreener (slower fallback)
- */
-async function getPriceFromDexScreener(): Promise<number | null> {
-    try {
-        const response = await fetch(
-            `https://api.dexscreener.com/latest/dex/tokens/${ACT_CONTRACT_ADDRESS}`,
-            { next: { revalidate: 60 }, signal: AbortSignal.timeout(5000) }
-        )
-        if (!response.ok) return null
-        const data = await response.json()
-        const pair = data.pairs?.[0]
-        return pair?.priceUsd ? parseFloat(pair.priceUsd) : null
-    } catch (error) {
-        console.warn('[Price] DexScreener failed:', error)
-        return null
-    }
-}
-
-/**
  * Get ACT token price in USD with multi-source fallback
- * Priority: PancakeSwap → CoinGecko → DexScreener → Cache → 0
+ * Priority: DexScreener → GeckoTerminal → CoinGecko → Cache → 0
  */
 export async function getActPrice(): Promise<number> {
     // Check cache first
     if (priceCache && Date.now() - priceCache.timestamp < CACHE_TTL) {
-        console.log('[Price] Using cached price:', priceCache.price)
+        // console.log('[Price] Using cached price:', priceCache.price)
         return priceCache.price
     }
 
-    // Try sources in order of speed/reliability
+    // Try sources in order
     const sources = [
-        { name: 'PancakeSwap', fn: getPriceFromPancakeSwap },
-        { name: 'CoinGecko', fn: getPriceFromCoinGecko },
-        { name: 'DexScreener', fn: getPriceFromDexScreener }
+        { name: 'DexScreener', fn: getPriceFromDexScreener },
+        { name: 'GeckoTerminal', fn: getPriceFromGeckoTerminal },
+        { name: 'CoinGecko', fn: getPriceFromCoinGecko }
     ]
 
     for (const source of sources) {
-        const price = await source.fn()
-        if (price !== null && price > 0) {
-            console.log(`[Price] Got price from ${source.name}:`, price)
-            // Update cache
-            priceCache = { price, timestamp: Date.now() }
-            return price
+        try {
+            const price = await source.fn()
+            if (price !== null && price > 0) {
+                // console.log(`[Price] Got price from ${source.name}:`, price)
+                priceCache = { price, timestamp: Date.now() }
+                return price
+            }
+        } catch (e) {
+            // Continue to next source
         }
     }
 
