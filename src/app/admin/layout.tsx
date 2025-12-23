@@ -53,6 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             src="/logo.png"
                             alt="ARK Admin"
                             width={100}
+                            loading="eager"
                             height={50}
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />

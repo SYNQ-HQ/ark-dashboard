@@ -17,7 +17,7 @@ export default function LandingPage() {
                     {/* <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/50 rounded-2xl flex items-center justify-center shadow-premium-lg rotate-3 hover:rotate-6 transition-transform duration-500"> */}
                     <div className="w-96 h-40 bg-transparent rounded-2xl flex items-center justify-center rotate-3 hover:rotate-6 transition-transform duration-500">
                         {/* <span className="text-4xl font-black text-white">A</span> */}
-                        <Image src={"/logo.png"} alt="Ark Logo" width={100} height={100} className="w-full h-full object-contain object-center" />
+                        <Image src={"/logo.png"} alt="Ark Logo" loading="eager" width={100} height={100} className="w-full h-full object-contain object-center" />
                     </div>
                 </div>
 

@@ -68,6 +68,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex items-center justify-center h-16 mb-6">
                     <Image
                         src="/logo.png"
+                        loading="eager"
                         alt={"logo"}
                         width={100} height={50}
                         className="object-cover transition-transform duration-700 group-hover:scale-105"

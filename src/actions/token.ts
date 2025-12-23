@@ -43,7 +43,11 @@ async function getPriceFromDexScreener(): Promise<number | null> {
         const bestPair = bscPairs[0];
 
         if (bestPair) {
-            console.log(`[Price] DexScreener selected pair: ${bestPair.pairAddress} | Liq: $${bestPair.liquidity?.usd} | Price: $${bestPair.priceUsd}`);
+            console.error(`\n\n###### PRICE DEBUG START ######`);
+            console.error(`[Price] DexScreener selected pair: ${bestPair.pairAddress}`);
+            console.error(`[Price] Liquidity: $${bestPair.liquidity?.usd}`);
+            console.error(`[Price] Price: $${bestPair.priceUsd}`);
+            console.error(`###### PRICE DEBUG END ######\n\n`);
             return parseFloat(bestPair.priceUsd);
         }
 
